@@ -1,116 +1,218 @@
-# ♫ YouTui Music Player
+# YouTui 🎵
 
-Player de YouTube/música para terminal (TUI) com interface moderna inspirada em Spotify.
+Um player de YouTube para terminal (TUI) **moderno e bonito** com tema **Catppuccin Mocha**, construído com Go e **tview**.
 
-## 🎨 Recursos
+> **Destaques**: Barra de progresso em tempo real • Atalhos contextuais • Controle completo de playlist • Interface colorida • Thread-safe • Sem dependência de APIs
 
-- **🎵 Player Central**: Visualização grande da música tocando
-- **🔍 Busca Inteligente**: Interface não bloqueia durante busca
-- **📋 Playlist Avançada**: Modos Normal, Aleatório, Repetir 1, Repetir Todas
-- **🎨 UI Moderna**: Cores vibrantes, bordas animadas, componentes visuais
-- **🎵 Visualizador de Áudio**: Barras animadas mostrando áudio em tempo real  
-- **🎬 Background Player**: MPV roda em background sem travar o TUI
-- **🛑 Controle Total**: Pause, play, stop, skip a qualquer momento
-- **📝 Sistema de Logs**: Debug completo com níveis (Info/Warning/Error)
-- **⚠️ Notificações**: Feedback visual colorido de todas as ações
+![Status](https://img.shields.io/badge/status-stable-green)
+![Go Version](https://img.shields.io/badge/go-1.24+-blue)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-- **Go 1.24+** (para compilar)
-- **mpv** - player de vídeo
+## ✨ Recursos
+
+### 🎨 Interface Visual
+-  **Tema Catppuccin Mocha**: Cores harmoniosas e modernas
+-  **Barra de Progresso Dinâmica**: Atualização em tempo real com tempo atual/total
+-  **Bordas Coloridas**: Painel ativo destacado em azul
+-  **Atalhos Contextuais**: Barra inferior com atalhos específicos para cada painel
+-  **Ajuda Integrada**: Pressione `?` para ver todos os atalhos
+
+### 🎵 Funcionalidades de Player
+-  **Busca via yt-dlp**: Busca direta sem depender de APIs externas
+-  **Playlist Completa**: Modos Normal, Repetir 1, Repetir Todas, Shuffle
+-  **Controles Completos**: Play/Pause/Stop/Next/Previous
+-  **Dois Modos de Reprodução**:
+   - **Direto**: Toque músicas dos resultados instantaneamente
+   - **Playlist**: Controle completo com navegação n/b
+-  **Modo Áudio/Vídeo**: Alterne entre reprodução de áudio ou vídeo
+-  **Reordenação**: Mova músicas na playlist com J/K
+
+### 🔧 Técnico
+-  **Thread-Safe**: Sincronização adequada com Mutex para operações concorrentes
+-  **IPC com mpv**: Controle via socket Unix para pause/progresso em tempo real
+-  **Sistema de Temas Desacoplado**: Preparado para múltiplos temas no futuro
+
+## Requisitos
+
+- **Go 1.24+**
+- **mpv** - player de mídia
 - **yt-dlp** - extrator de vídeos do YouTube
+- **socat** - para comandos IPC do mpv
 
 ### Instalação dos requisitos
 
 ```bash
-# Debian/Ubuntu
-sudo apt install mpv
-pip install -U yt-dlp
-
 # Arch Linux
-sudo pacman -S mpv yt-dlp
+sudo pacman -S mpv yt-dlp socat
+yay -S nerd-fonts-complete  # ou qualquer Nerd Font
+
+# Debian/Ubuntu
+sudo apt install mpv socat
+pip install -U yt-dlp
+# Baixe uma Nerd Font de: https://www.nerdfonts.com/
 
 # macOS
-brew install mpv yt-dlp
+brew install mpv yt-dlp socat
+brew tap homebrew/cask-fonts
+brew install --cask font-hack-nerd-font
 ```
 
-## Compilação
+## Instalação
 
 ```bash
-go build -o youtui ./cmd/youtui
-```
-
-## Uso
-
-```bash
+go build -o youtui .
 ./youtui
 ```
 
-### Interface em Grid
-
-A interface é dividida em **4 painéis**:
+## 📐 Layout
 
 ```
-┌─────────────────┬─────────────────┐
-│  🔍 Busca       │  📋 Playlist    │
-│                 │                 │
-├─────────────────┼─────────────────┤
-│  📺 Resultados  │  🎵 Controles   │
-│                 │                 │
-└─────────────────┴─────────────────┘
+┌──────────────────────┬─────────────────────┐
+│  🔍 Busca           │  📋 Playlist       │
+│  [Input]            │  1. Música A       │
+│                     │  2. Música B       │
+│  📋 Resultados      │  3. Música C       │
+│  1. Resultado 1     │                    │
+│  2. Resultado 2     │                    │
+├─────────────────────┴─────────────────────┤
+│  🎵 Player                                │
+│  ▶ Now Playing - Artist                  │
+│  ████████████░░░░ 02:45/04:30            │
+│  Áudio | Normal                           │
+├───────────────────────────────────────────┤
+│  Status: Tocando música...                │
+├───────────────────────────────────────────┤
+│  ↑/↓ Navegar | a Add | c Pause | ? Ajuda│
+└───────────────────────────────────────────┘
 ```
 
-### Controles
+## ⌨️ Controles
 
-**Navegação:**
-- **Tab** - Alternar entre painéis (Busca → Playlist → Resultados → Visualizador → Logs*)
-- **↑/↓** ou **j/k** - Navegar pelos itens (resultados ou playlist)
-- **Enter** - Buscar (no painel de busca) ou Reproduzir (nos resultados/playlist)
+### 🧭 Navegação
+- **Tab** - Alternar entre painéis (Busca → Resultados → Playlist)
+- **/** - Focar na busca a qualquer momento
+- **↑/↓** - Navegar nas listas
+- **?** - Abrir ajuda com todos os atalhos
 
-**Reprodução:**
-- **m** - Alternar modo de reprodução (Vídeo MP4 / Áudio MP3)
-- **s** - Parar reprodução atual (funcionando!)
-- **Space** - Iniciar reprodução da playlist completa
+### 🔍 Busca
+- Digite normalmente na caixa de busca
+- **Enter** - Executar busca
 
-**Playlist:**
-- **p** - Adicionar item selecionado à playlist
-- **r** - Alternar modo de playlist (Normal → Aleatório → Repetir 1 → Repetir Todas)
-- **d** ou **x** - Remover item da playlist (quando no painel de playlist)
-- **Shift+J** - Mover item para baixo na playlist
-- **Shift+K** - Mover item para cima na playlist
+### 📋 Resultados
+- **↑/↓** - Navegar pelos resultados
+- **Enter** - Tocar faixa diretamente (modo preview)
+- **a** - Adicionar à playlist
 
-**Debug:**
-- **l** - Alternar visualização do painel de logs
+### 📑 Playlist
+- **↑/↓** - Navegar na playlist
+- **Enter** ou **Space** - Tocar faixa selecionada (com controles n/b)
+- **d** - Remover item da playlist
+- **J** - Mover item para baixo
+- **K** - Mover item para cima
 
-**Geral:**
-- **q** ou **Ctrl+C** - Sair (mata todos os processos automaticamente)
+### 🎮 Player (Controles Globais)
+- **c** ou **Space** - Pause/Play (funciona sempre)
+- **s** - Stop completo
+- **n** - Próxima faixa *(só quando tocando da playlist)*
+- **b** - Faixa anterior *(só quando tocando da playlist)*
+- **r** - Ciclar modo repetição:
+  - Normal → Repetir 1 → Repetir Todas → Normal
+- **h** - Toggle Shuffle (embaralhar)
+- **m** - Alternar modo áudio/vídeo
 
-*O painel de logs só aparece quando ativado com 'l'
+### 🚪 Geral
+- **q** - Sair
 
-### Como Usar
+> **💡 Dica**: Os atalhos **n** e **b** só funcionam quando você toca uma música **da playlist** (não dos resultados). Para usar esses controles, adicione músicas com **a** e toque da playlist com **Enter** ou **Space**.
 
-1. **Buscar vídeos**: Digite no campo de busca e pressione Enter
-2. **Adicionar à playlist**: Navegue pelos resultados com ↑/↓ e pressione 'p'
-3. **Reproduzir playlist**: Pressione Space para iniciar a reprodução automática
-4. **Mudar modo de playlist**: Pressione 'r' para alternar entre modos
-5. **Ver logs**: Pressione 'l' para abrir/fechar o painel de logs
-6. **Parar música**: Pressione 's' a qualquer momento
+## 🚀 Workflow Recomendado
 
-### Funcionalidades
+### Para ouvir músicas avulsas (Preview):
+1. Digite uma busca e pressione **Enter**
+2. Navegue nos resultados com **↑/↓**
+3. Pressione **Enter** para tocar imediatamente
+4. Use **c** para pausar/retomar
+5. Pressione **/** para nova busca
 
-- 🎨 **Layout em Grid** - Interface dividida em 4 seções (ou 5 com logs)
-- 📋 **Playlist Completa** - Adicione, remova, reordene e reproduza automaticamente
-- 🔀 **Modos de Playlist** - Normal, Aleatório, Repetir Uma, Repetir Todas
-- 🎵 **Modo Áudio/Vídeo** - Alterne entre reproduzir vídeo completo ou apenas áudio
-- 🎯 **Navegação por Painéis** - Use Tab para focar em diferentes seções
-- 🎬 **Reprodução em Background** - O TUI não trava durante a reprodução (mpv em background)
-- 🎵 **Visualizador de Áudio** - Veja informações e visualização da música tocando
-- 🛑 **Controle de Reprodução** - Pare a música a qualquer momento (tecla 's' funcionando!)
-- 📝 **Painel de Logs** - Veja todos os eventos e erros da aplicação em tempo real
-- ⚠️ **Notificações Visuais** - Indicadores coloridos de erros, warnings e info
-- 🔄 **Loading Assíncrono** - A UI não trava durante buscas
-- 🧹 **Cleanup Automático** - Todos os processos (mpv e cava) são finalizados ao sair
-- 🎨 **Visual Moderno** - Bordas coloridas indicam o painel ativo
+### Para criar uma playlist:
+1. Faça buscas e pressione **a** em cada resultado para adicionar
+2. Vá para a playlist com **Tab**
+3. Reordene se necessário com **J/K**
+4. Pressione **Enter** ou **Space** para iniciar
+5. Use **n/b** para navegar entre faixas
+6. Configure modos com **r** (repetição) e **h** (shuffle)
+7. Pressione **?** para ver todos os atalhos disponíveis
 
-## Notas sobre reprodução de vídeos (2025)
+## Características Técnicas
+
+- **Framework**: tview (robusto e estável)
+- **Busca**: yt-dlp NDJSON streaming (sem dependência de APIs)
+- **Player**: mpv com IPC socket para controle completo
+- **Concorrência**: Mutex para thread-safety
+- **Auto-avanço**: Playlist contínua com modos de repetição
+- **Layout Flex**: Responsivo e adaptável
+- **Tema**: Catppuccin Mocha (sistema de temas desacoplado para futuras expansões)
+- **Barra de Progresso**: Atualização em tempo real via IPC
+- **Ajuda Integrada**: Modal com todos os atalhos (pressione `?`)
+
+## 🎨 Sistema de Temas
+
+YouTui usa o tema **Catppuccin Mocha** por padrão, com cores cuidadosamente selecionadas para uma experiência visual agradável e moderna:
+
+### Paleta de Cores
+- **Borda Ativa**: Azul Catppuccin (#89b4fa) - indica o painel focado em tempo real
+- **Borda Inativa**: Surface0 (#313244) - painéis em segundo plano
+- **Player**: Roxo Mauve (#cba6f7) - destaque especial para o player
+- **Background**: Base escuro (#1e1e2e) - fundo confortável para os olhos
+- **Texto**: Text (#cdd6f4) - claro e legível
+- **Seleção**: Azul sobre preto - itens selecionados nas listas
+
+### Atalhos Coloridos (Barra Inferior)
+Cada tipo de ação tem sua cor específica para facilitar identificação:
+- **Navegação** (↑/↓, Tab, Enter): Azul (#89b4fa)
+- **Adicionar** (a, c): Verde (#a6e3a1)
+- **Remover** (d, q): Vermelho (#f38ba8)
+- **Mover** (J/K): Roxo (#cba6f7)
+- **Repeat** (r): Laranja (#fab387)
+- **Shuffle** (h): Teal (#94e2d5)
+- **Next/Prev** (n/b): Sky (#89dceb)
+- **Ajuda** (?): Amarelo (#f9e2af)
+
+### Arquitetura
+O sistema de temas está desacoplado em `internal/ui/theme.go`, preparado para futura implementação de:
+- Múltiplos temas (Gruvbox, Nord, Dracula, etc.)
+- Seleção via arquivo de configuração TOML (`~/.config/youtui/themes.toml`)
+- Temas personalizados pelo usuário
+
+Um exemplo de configuração está disponível em `themes.toml.example`.
+
+## 🌟 Destaques de Implementação
+
+### Barra de Progresso Dinâmica
+A barra de progresso atualiza a cada 500ms consultando o mpv via IPC socket:
+```
+████████████████████░░░░░░░░░░░░░░░░░░░░ 02:45/04:30
+```
+- Mostra tempo atual e duração total
+- Atualização visual em tempo real
+- Funciona mesmo quando em pausa
+
+### Atalhos Contextuais Inteligentes
+A barra inferior muda automaticamente conforme o painel ativo:
+- **Na Busca**: Mostra atalhos de busca e navegação
+- **Nos Resultados**: Mostra como adicionar à playlist
+- **Na Playlist**: Mostra controles completos (mover, remover, modos)
+
+### Dois Modos de Reprodução
+1. **Modo Direto** (dos Resultados): Preview rápido sem playlist
+2. **Modo Playlist**: Controle completo com n/b, reordenação e modos
+
+### Sistema Robusto de Concorrência
+- Mutex protegendo todas as operações críticas
+- Flag `skipAutoPlay` para evitar race conditions entre pulo manual e auto-play
+- Gerenciamento seguro de goroutines do mpv
+
+## ⚠️ Notas sobre reprodução de vídeos (2025)
 
 O YouTube começou a exigir **PO Tokens** para alguns formatos de vídeo. Este projeto usa uma estratégia que:
 
@@ -118,6 +220,26 @@ O YouTube começou a exigir **PO Tokens** para alguns formatos de vídeo. Este p
 2. Se falhar, usa formato progressivo 360p (sempre disponível)
 
 A qualidade pode variar dependendo das restrições do YouTube no momento.
+
+## 🐛 Solução de Problemas
+
+### Pause não funciona
+Certifique-se de que:
+- `socat` está instalado
+- A música está realmente tocando (veja o ícone ▶)
+- O socket IPC do mpv foi criado corretamente
+
+### n/b não funcionam
+Esses atalhos **só funcionam quando tocando da playlist**:
+1. Adicione músicas à playlist com **a**
+2. Navegue até a playlist com **Tab**
+3. Pressione **Enter** ou **Space** para iniciar
+4. Agora **n/b** funcionarão
+
+### Músicas pulam incorretamente
+Se as músicas pularem para a última e finalizarem:
+- Recompile o projeto: `go build -o youtui .`
+- O bug de race condition foi corrigido na versão atual
 
 ## Configuração opcional
 
@@ -130,6 +252,60 @@ export INVIDIOUS_BASE="https://invidious.exemplo.com"
 
 Por padrão usa: `https://yewtu.be`
 
-## Licença
+## 🗺️ Roadmap
 
-MIT
+### Futuras Implementações
+- [ ] Seleção de temas via arquivo TOML
+- [ ] Temas adicionais (Gruvbox, Nord, Dracula, Tokyo Night)
+- [ ] Histórico de músicas tocadas
+- [ ] Salvar/carregar playlists
+- [ ] Filtro de busca nos resultados
+- [ ] Visualizador de letras (lyrics)
+- [ ] Equalizer visual ASCII
+- [ ] Suporte a múltiplas playlists
+- [ ] Download de músicas
+- [ ] Cache de resultados de busca
+
+### Melhorias Técnicas
+- [ ] Testes unitários
+- [ ] CI/CD pipeline
+- [ ] Binários pré-compilados para releases
+- [ ] Documentação de API interna
+- [ ] Profiles de performance
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Sinta-se livre para:
+- Reportar bugs via Issues
+- Sugerir novas features
+- Enviar Pull Requests
+- Melhorar a documentação
+
+### Estrutura do Projeto
+```
+YouTui/
+├── cmd/              # Ponto de entrada da aplicação
+├── internal/
+│   ├── ui/          # Interface TUI (tview)
+│   │   ├── simple.go   # UI principal
+│   │   └── theme.go    # Sistema de temas
+│   └── search/      # Integração com yt-dlp
+├── go.mod
+└── README.md
+```
+
+## 📝 Licença
+
+MIT License - sinta-se livre para usar, modificar e distribuir.
+
+## 🙏 Agradecimentos
+
+- [tview](https://github.com/rivo/tview) - Framework TUI excepcional
+- [tcell](https://github.com/gdamore/tcell) - Terminal handling robusto
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - Extrator poderoso do YouTube
+- [mpv](https://mpv.io/) - Player de mídia versátil
+- [Catppuccin](https://github.com/catppuccin/catppuccin) - Tema lindo e acessível
+
+---
+
+**Desenvolvido com ❤️ e Go**
