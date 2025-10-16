@@ -1,8 +1,18 @@
-# YouTui
+# ♫ YouTui Music Player
 
-Interface TUI (Terminal User Interface) para buscar e assistir vídeos do YouTube diretamente no terminal.
+Player de YouTube/música para terminal (TUI) com interface moderna inspirada em Spotify.
 
-## Requisitos
+## 🎨 Recursos
+
+- **🎵 Player Central**: Visualização grande da música tocando
+- **🔍 Busca Inteligente**: Interface não bloqueia durante busca
+- **📋 Playlist Avançada**: Modos Normal, Aleatório, Repetir 1, Repetir Todas
+- **🎨 UI Moderna**: Cores vibrantes, bordas animadas, componentes visuais
+- **🎵 Visualizador de Áudio**: Barras animadas mostrando áudio em tempo real  
+- **🎬 Background Player**: MPV roda em background sem travar o TUI
+- **🛑 Controle Total**: Pause, play, stop, skip a qualquer momento
+- **📝 Sistema de Logs**: Debug completo com níveis (Info/Warning/Error)
+- **⚠️ Notificações**: Feedback visual colorido de todas as ações
 
 - **Go 1.24+** (para compilar)
 - **mpv** - player de vídeo
@@ -50,20 +60,54 @@ A interface é dividida em **4 painéis**:
 
 ### Controles
 
-- **Tab** - Alternar entre painéis (Busca → Playlist → Resultados → Controles)
+**Navegação:**
+- **Tab** - Alternar entre painéis (Busca → Playlist → Resultados → Visualizador → Logs*)
+- **↑/↓** ou **j/k** - Navegar pelos itens (resultados ou playlist)
 - **Enter** - Buscar (no painel de busca) ou Reproduzir (nos resultados/playlist)
-- **↑/↓** ou **j/k** - Navegar pelos resultados
+
+**Reprodução:**
 - **m** - Alternar modo de reprodução (Vídeo MP4 / Áudio MP3)
+- **s** - Parar reprodução atual (funcionando!)
+- **Space** - Iniciar reprodução da playlist completa
+
+**Playlist:**
 - **p** - Adicionar item selecionado à playlist
-- **q** ou **Ctrl+C** - Sair
+- **r** - Alternar modo de playlist (Normal → Aleatório → Repetir 1 → Repetir Todas)
+- **d** ou **x** - Remover item da playlist (quando no painel de playlist)
+- **Shift+J** - Mover item para baixo na playlist
+- **Shift+K** - Mover item para cima na playlist
+
+**Debug:**
+- **l** - Alternar visualização do painel de logs
+
+**Geral:**
+- **q** ou **Ctrl+C** - Sair (mata todos os processos automaticamente)
+
+*O painel de logs só aparece quando ativado com 'l'
+
+### Como Usar
+
+1. **Buscar vídeos**: Digite no campo de busca e pressione Enter
+2. **Adicionar à playlist**: Navegue pelos resultados com ↑/↓ e pressione 'p'
+3. **Reproduzir playlist**: Pressione Space para iniciar a reprodução automática
+4. **Mudar modo de playlist**: Pressione 'r' para alternar entre modos
+5. **Ver logs**: Pressione 'l' para abrir/fechar o painel de logs
+6. **Parar música**: Pressione 's' a qualquer momento
 
 ### Funcionalidades
 
-- 🎨 **Layout em Grid** - Interface dividida em 4 seções organizadas
-- 📋 **Playlist** - Adicione vídeos à playlist com a tecla 'p'
+- 🎨 **Layout em Grid** - Interface dividida em 4 seções (ou 5 com logs)
+- 📋 **Playlist Completa** - Adicione, remova, reordene e reproduza automaticamente
+- 🔀 **Modos de Playlist** - Normal, Aleatório, Repetir Uma, Repetir Todas
 - 🎵 **Modo Áudio/Vídeo** - Alterne entre reproduzir vídeo completo ou apenas áudio
 - 🎯 **Navegação por Painéis** - Use Tab para focar em diferentes seções
-- 📊 **Painel de Informações** - Veja estatísticas e atalhos disponíveis
+- 🎬 **Reprodução em Background** - O TUI não trava durante a reprodução (mpv em background)
+- 🎵 **Visualizador de Áudio** - Veja informações e visualização da música tocando
+- 🛑 **Controle de Reprodução** - Pare a música a qualquer momento (tecla 's' funcionando!)
+- 📝 **Painel de Logs** - Veja todos os eventos e erros da aplicação em tempo real
+- ⚠️ **Notificações Visuais** - Indicadores coloridos de erros, warnings e info
+- 🔄 **Loading Assíncrono** - A UI não trava durante buscas
+- 🧹 **Cleanup Automático** - Todos os processos (mpv e cava) são finalizados ao sair
 - 🎨 **Visual Moderno** - Bordas coloridas indicam o painel ativo
 
 ## Notas sobre reprodução de vídeos (2025)
