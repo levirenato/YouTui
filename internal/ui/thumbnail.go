@@ -2,6 +2,7 @@ package ui
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"fmt"
 	"image"
@@ -56,13 +57,23 @@ func (tc *ThumbnailCache) getCachePath(url string) string {
 	return filepath.Join(tc.cacheDir, hash+".jpg")
 }
 
-// downloadImage baixa a imagem da URL
+// downloadImage baixa a imagem da URL (versão sem contexto)
 func (tc *ThumbnailCache) downloadImage(url string) (image.Image, error) {
+	return tc.downloadImageWithContext(context.Background(), url)
+}
+
+// downloadImageWithContext baixa a imagem da URL com suporte a cancelamento
+func (tc *ThumbnailCache) downloadImageWithContext(ctx context.Context, url string) (image.Image, error) {
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 
-	resp, err := client.Get(url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create request failed: %w", err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("download failed: %w", err)
 	}
@@ -83,6 +94,11 @@ func (tc *ThumbnailCache) downloadImage(url string) (image.Image, error) {
 // GetThumbnailImage retorna a imagem diretamente (sem escape codes)
 // Útil para tview.Image
 func (tc *ThumbnailCache) GetThumbnailImage(url string) (image.Image, error) {
+	return tc.GetThumbnailImageWithContext(context.Background(), url)
+}
+
+// GetThumbnailImageWithContext retorna a imagem com suporte a cancelamento via contexto
+func (tc *ThumbnailCache) GetThumbnailImageWithContext(ctx context.Context, url string) (image.Image, error) {
 	if url == "" {
 		return nil, fmt.Errorf("empty URL")
 	}
@@ -91,7 +107,7 @@ func (tc *ThumbnailCache) GetThumbnailImage(url string) (image.Image, error) {
 
 	// Verifica se já existe em disco
 	if _, statErr := os.Stat(cachePath); statErr == nil {
-		// Carrega do cache
+		// Carrega do cache (rápido, não precisa de contexto)
 		f, err := os.Open(cachePath)
 		if err == nil {
 			defer f.Close()
@@ -102,8 +118,8 @@ func (tc *ThumbnailCache) GetThumbnailImage(url string) (image.Image, error) {
 		}
 	}
 
-	// Se não está em cache ou falhou ao carregar, baixa
-	img, err := tc.downloadImage(url)
+	// Se não está em cache ou falhou ao carregar, baixa com contexto
+	img, err := tc.downloadImageWithContext(ctx, url)
 	if err != nil {
 		return nil, err
 	}

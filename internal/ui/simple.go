@@ -101,6 +101,8 @@ type SimpleApp struct {
 	useKittyImages      bool
 	detailsLoadingIdx   int
 	detailsLoadingMutex sync.Mutex
+	detailsCancelFunc   context.CancelFunc
+	detailsDebounceTimer *time.Timer
 
 	theme *Theme
 
@@ -188,8 +190,9 @@ func (a *SimpleApp) setupSimple() {
 	})
 
 	// Handler para atualizar detalhes quando muda seleção
+	// Usa debounce para evitar múltiplas chamadas ao navegar rapidamente
 	a.searchResults.SetChangedFunc(func(idx int, _ string, _ string, _ rune) {
-		a.updateSearchDetails(idx)
+		a.updateSearchDetailsDebounced(idx)
 	})
 
 	a.playlist = tview.NewList().
@@ -450,15 +453,16 @@ func (a *SimpleApp) doSearch(query string) {
 
 		// Reabilita o handler DEPOIS de adicionar todos os itens
 		a.searchResults.SetChangedFunc(func(idx int, _ string, _ string, _ rune) {
-			a.updateSearchDetails(idx)
+			a.updateSearchDetailsDebounced(idx)
 		})
 
 		a.app.SetFocus(a.searchResults)
 		a.updateCommandBar()
 
-		// Carrega detalhes do primeiro item apenas
+		// Carrega detalhes do primeiro item de forma assíncrona
+		// para não bloquear a UI thread
 		if len(tracksCopy) > 0 {
-			a.updateSearchDetails(0)
+			go a.updateSearchDetails(0)
 		}
 	})
 }
@@ -942,12 +946,30 @@ func (a *SimpleApp) toggleMode() {
 	})
 }
 
-func (a *SimpleApp) updateSearchDetails(idx int) {
-	// Evita carregar detalhes se já está carregando
+// updateSearchDetailsDebounced adiciona debounce para evitar múltiplas chamadas
+// ao navegar rapidamente pelos resultados
+func (a *SimpleApp) updateSearchDetailsDebounced(idx int) {
 	a.detailsLoadingMutex.Lock()
-	if a.detailsLoadingIdx == idx {
-		a.detailsLoadingMutex.Unlock()
-		return
+	
+	// Cancela timer anterior se existir
+	if a.detailsDebounceTimer != nil {
+		a.detailsDebounceTimer.Stop()
+	}
+	
+	// Cria novo timer de 150ms
+	a.detailsDebounceTimer = time.AfterFunc(150*time.Millisecond, func() {
+		a.updateSearchDetails(idx)
+	})
+	
+	a.detailsLoadingMutex.Unlock()
+}
+
+func (a *SimpleApp) updateSearchDetails(idx int) {
+	// Cancela download anterior se existir
+	a.detailsLoadingMutex.Lock()
+	if a.detailsCancelFunc != nil {
+		a.detailsCancelFunc()
+		a.detailsCancelFunc = nil
 	}
 	a.detailsLoadingIdx = idx
 	a.detailsLoadingMutex.Unlock()
@@ -994,32 +1016,58 @@ func (a *SimpleApp) updateSearchDetails(idx int) {
 		a.detailsText.SetText(basicDetails)
 	})
 
-	// Atualiza thumbnail em background (não bloqueia) - COM timeout
+	// Atualiza thumbnail em background (não bloqueia) - COM cancelamento
 	if thumbnailURL != "" && a.thumbCache != nil {
-		go func(url string) {
-			// Timeout para download de thumbnail
-			done := make(chan bool, 1)
-			var img image.Image
-			var err error
+		// Cria contexto cancelável para este download
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		
+		a.detailsLoadingMutex.Lock()
+		a.detailsCancelFunc = cancel
+		a.detailsLoadingMutex.Unlock()
+		
+		go func(url string, ctx context.Context) {
+			// Canal para resultado do download
+			type result struct {
+				img image.Image
+				err error
+			}
+			resultChan := make(chan result, 1)
 
+			// Download em goroutine separada com contexto
 			go func() {
-				img, err = a.thumbCache.GetThumbnailImage(url)
-				done <- true
+				img, err := a.thumbCache.GetThumbnailImageWithContext(ctx, url)
+				select {
+				case resultChan <- result{img: img, err: err}:
+				case <-ctx.Done():
+					// Contexto cancelado, não envia resultado
+				}
 			}()
 
-			// Espera no máximo 3 segundos
+			// Aguarda resultado ou cancelamento
 			select {
-			case <-done:
-				if err == nil && img != nil {
-					a.app.QueueUpdateDraw(func() {
-						a.detailsThumb.SetImage(img)
-					})
+			case res := <-resultChan:
+				if res.err == nil && res.img != nil {
+					// Verifica se ainda é o item correto antes de atualizar
+					a.detailsLoadingMutex.Lock()
+					currentIdx := a.detailsLoadingIdx
+					a.detailsLoadingMutex.Unlock()
+					
+					if currentIdx == idx {
+						a.app.QueueUpdateDraw(func() {
+							a.detailsThumb.SetImage(res.img)
+						})
+					}
 				}
-			case <-time.After(3 * time.Second):
-				// Timeout - ignora thumbnail
+			case <-ctx.Done():
+				// Cancelado ou timeout - não faz nada
 				return
 			}
-		}(thumbnailURL)
+			
+			// Limpa a função de cancelamento
+			a.detailsLoadingMutex.Lock()
+			a.detailsCancelFunc = nil
+			a.detailsLoadingMutex.Unlock()
+		}(thumbnailURL, ctx)
 	} else {
 		// Limpa thumbnail se não houver URL
 		a.app.QueueUpdateDraw(func() {
