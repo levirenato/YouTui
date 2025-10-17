@@ -10,11 +10,13 @@ require (
 )
 
 require (
+	github.com/dolmen-go/kittyimg v0.0.0-20250610224728-874967bd8ea4 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )

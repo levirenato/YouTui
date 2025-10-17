@@ -12,13 +12,16 @@ Um player de YouTube para terminal (TUI) **moderno e bonito** com tema **Catppuc
 
 ### 🎨 Interface Visual
 -  **Tema Catppuccin Mocha**: Cores harmoniosas e modernas
--  **Barra de Progresso Dinâmica**: Atualização em tempo real com tempo atual/total
+-  **Thumbnails de Alta Qualidade**: TrueColor + Floyd-Steinberg dithering para pixels menores e mais detalhes
+-  **Painel de Detalhes**: Mostra thumbnail, título, canal e duração do vídeo selecionado instantaneamente
+-  **Barra de Progresso Dinâmica**: Atualização em tempo real com tempo atual/total e largura responsiva
 -  **Bordas Coloridas**: Painel ativo destacado em azul
+-  **Ícones Musicais Unicode**: Símbolos musicais (♪ ♫ ♬ ♩ ▸ •) nas listas
 -  **Atalhos Contextuais**: Barra inferior com atalhos específicos para cada painel
 -  **Ajuda Integrada**: Pressione `?` para ver todos os atalhos
 
 ### 🎵 Funcionalidades de Player
--  **Busca via yt-dlp**: Busca direta sem depender de APIs externas
+-  **Busca Rápida**: Resultados aparecem em 2-5 segundos via yt-dlp, sem depender de APIs externas
 -  **Playlist Completa**: Modos Normal, Repetir 1, Repetir Todas, Shuffle
 -  **Controles Completos**: Play/Pause/Stop/Next/Previous
 -  **Dois Modos de Reprodução**:
@@ -69,21 +72,27 @@ go build -o youtui .
 ```
 ┌──────────────────────┬─────────────────────┐
 │  🔍 Busca           │  📋 Playlist       │
-│  [Input]            │  1. Música A       │
-│                     │  2. Música B       │
-│  📋 Resultados      │  3. Música C       │
-│  1. Resultado 1     │                    │
-│  2. Resultado 2     │                    │
-├─────────────────────┴─────────────────────┤
-│  🎵 Player                                │
-│  ▶ Now Playing - Artist                  │
-│  ████████████░░░░ 02:45/04:30            │
-│  Áudio | Normal                           │
-├───────────────────────────────────────────┤
-│  Status: Tocando música...                │
-├───────────────────────────────────────────┤
-│  ↑/↓ Navegar | a Add | c Pause | ? Ajuda│
-└───────────────────────────────────────────┘
+│  [Input]            │  ♪ Música A        │
+│                     │  ♫ Música B        │
+│  📋 Resultados      │  ♬ Música C        │
+│  ♪ Resultado 1      │                    │
+│  ♫ Resultado 2      │                    │
+│┌─────┬──────────────┐│                    │
+││🖼️  │Título        ││                    │
+││img │Canal: Nome   ││                    │
+││    │Duração: 4:30 ││                    │
+││    │Data: 12/10   ││                    │
+│└─────┴──────────────┘│                    │
+├─────┬────────────────┴─────────────────────┤
+│ 🖼️ │  🎵 Player                          │
+│img │  ▶ Now Playing - Artist             │
+│    │  ████████████░░░░ 02:45/04:30       │
+│    │  Áudio | Normal                      │
+├─────┴──────────────────────────────────────┤
+│  Status: Tocando música...                 │
+├────────────────────────────────────────────┤
+│  ↑/↓ Navegar | a Add | c Pause | ? Ajuda │
+└────────────────────────────────────────────┘
 ```
 
 ## ⌨️ Controles
@@ -221,6 +230,36 @@ O YouTube começou a exigir **PO Tokens** para alguns formatos de vídeo. Este p
 
 A qualidade pode variar dependendo das restrições do YouTube no momento.
 
+## 🖼️ Thumbnails
+
+YouTui exibe **thumbnails reais em alta qualidade** dos vídeos do YouTube usando o widget `tview.Image`.
+
+### Como Funciona
+- ✅ **Dois painéis com thumbnails**:
+  - **Player**: Thumbnail da música tocando (20 caracteres de largura)
+  - **Detalhes**: Thumbnail do vídeo selecionado nos resultados (20 caracteres)
+- ✅ **Alta Qualidade**: TrueColor (16 milhões de cores) + Floyd-Steinberg dithering
+- ✅ **Download automático** das capas do YouTube (hqdefault.jpg)
+- ✅ **Cache em disco** (`~/.cache/youtui/thumbnails/`)
+- ✅ **Atualização em tempo real** quando você muda de música ou seleção
+- ✅ **Funciona em qualquer terminal** (não requer Kitty Graphics Protocol)
+
+### Características Técnicas
+- **TrueColor**: Renderização com 16 milhões de cores para máxima fidelidade
+- **Floyd-Steinberg Dithering**: Algoritmo de difusão de erro para suavizar gradientes
+- **Resultado**: Pixels menores e imagem mais definida vs. 256 cores padrão
+- **Download assíncrono**: Não trava a UI durante o carregamento
+- **Cache inteligente**: Só baixa uma vez, reutiliza em próximas execuções
+
+### Painel de Detalhes
+Ao navegar pelos resultados de busca, o painel inferior mostra:
+- **Thumbnail** do vídeo (à esquerda)
+- **Título** em amarelo/negrito
+- **Canal** do autor
+- **Duração** do vídeo
+
+As informações são exibidas **instantaneamente** quando você navega pelos resultados, sem necessidade de esperar carregamentos adicionais.
+
 ## 🐛 Solução de Problemas
 
 ### Pause não funciona
@@ -241,6 +280,12 @@ Se as músicas pularem para a última e finalizarem:
 - Recompile o projeto: `go build -o youtui .`
 - O bug de race condition foi corrigido na versão atual
 
+### Ícones aparecem como quadrados
+Se os ícones musicais (♪ ♫ ♬) aparecem como `□`:
+- Sua fonte não suporta caracteres Unicode musicais
+- Instale uma fonte que suporte Unicode completo
+- Recomendado: JetBrains Mono, Fira Code, ou qualquer Nerd Font
+
 ## Configuração opcional
 
 Você pode definir uma instância Invidious alternativa:
@@ -255,6 +300,8 @@ Por padrão usa: `https://yewtu.be`
 ## 🗺️ Roadmap
 
 ### Futuras Implementações
+- [ ] **Thumbnails assíncronos**: Download em background sem travar a UI
+- [ ] **Thumbnail no player**: Exibir capa do álbum/vídeo na área do player
 - [ ] Seleção de temas via arquivo TOML
 - [ ] Temas adicionais (Gruvbox, Nord, Dracula, Tokyo Night)
 - [ ] Histórico de músicas tocadas
