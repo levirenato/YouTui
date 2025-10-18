@@ -525,12 +525,19 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 	a.startProgressUpdater()
 
-	go func() {
-		cmd.Wait()
+	go func(expectedCmd *exec.Cmd) {
+		expectedCmd.Wait()
 
 		time.Sleep(500 * time.Millisecond)
 
 		a.mu.Lock()
+		// Verifica se ainda é o processo atual antes de fazer auto-play
+		if a.mpvProcess != expectedCmd {
+			// Processo foi substituído, ignora este callback
+			a.mu.Unlock()
+			return
+		}
+		
 		if a.skipAutoPlay {
 			a.skipAutoPlay = false
 			a.mu.Unlock()
@@ -581,7 +588,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 				a.statusBar.SetText("[yellow]Playlist finalizada")
 			})
 		}
-	}()
+	}(cmd)
 }
 
 // getTrackIconFromList retorna ícone para listas de resultados
@@ -814,10 +821,16 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 	a.startProgressUpdater()
 
-	go func() {
-		cmd.Wait()
+	go func(expectedCmd *exec.Cmd) {
+		expectedCmd.Wait()
 
+		// Verifica se ainda é o processo atual antes de atualizar estado
 		a.mu.Lock()
+		if a.mpvProcess != expectedCmd {
+			// Processo foi substituído, ignora este callback
+			a.mu.Unlock()
+			return
+		}
 		a.isPlaying = false
 		a.mu.Unlock()
 
@@ -825,7 +838,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 			a.updatePlayerSimple()
 			a.statusBar.SetText("[yellow]Reprodução finalizada")
 		})
-	}()
+	}(cmd)
 }
 
 func (a *SimpleApp) playNext() {
@@ -850,11 +863,15 @@ func (a *SimpleApp) playNext() {
 		return
 	}
 
+	// Se está tocando em modo direto (currentTrack < 0), começa do início da playlist
 	if currentTrack < 0 {
+		track := a.playlistTracks[0]
+		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[yellow]⚠ currentTrack=%d - Não está tocando da playlist", currentTrack))
+			a.statusBar.SetText("[cyan]▶ Entrando na playlist...")
 		})
+		go a.playTrackSimple(track, 0)
 		return
 	}
 
@@ -890,7 +907,9 @@ func (a *SimpleApp) playNext() {
 
 func (a *SimpleApp) playPrevious() {
 	a.mu.Lock()
-	if len(a.playlistTracks) == 0 {
+	playlistLen := len(a.playlistTracks)
+	
+	if playlistLen == 0 {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
 			a.statusBar.SetText("[yellow]⚠ Playlist vazia")
@@ -906,11 +925,16 @@ func (a *SimpleApp) playPrevious() {
 		return
 	}
 
+	// Se está tocando em modo direto (currentTrack < 0), começa do final da playlist
 	if a.currentTrack < 0 {
+		lastIdx := playlistLen - 1
+		track := a.playlistTracks[lastIdx]
+		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ Não está tocando da playlist. Use Space na playlist para iniciar.")
+			a.statusBar.SetText("[cyan]▶ Entrando na playlist...")
 		})
+		go a.playTrackSimple(track, lastIdx)
 		return
 	}
 
