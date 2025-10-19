@@ -101,7 +101,13 @@ func (a *SimpleApp) setupStatusBars() {
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter)
 
+	// Badge de modo estilo Neovim (canto inferior direito)
+	a.modeBadge = tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignRight)
+
 	a.updatePlayerInfo()
+	a.updateModeBadge()
 	a.statusBar.SetText("")
 	a.updateCommandBar()
 }
@@ -131,10 +137,15 @@ func (a *SimpleApp) setupLayout() {
 		AddItem(a.thumbnailView, 20, 0, false).
 		AddItem(a.playerInfo, 0, 1, false)
 
+	// Barra de status com badge de modo no canto direito
+	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(a.statusBar, 0, 1, false).
+		AddItem(a.modeBadge, 18, 0, false)
+
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
 		AddItem(playerFlex, 5, 0, false).
-		AddItem(a.statusBar, 1, 0, false).
+		AddItem(statusBarFlex, 1, 0, false).
 		AddItem(a.commandBar, 1, 0, false)
 
 	a.app.SetRoot(mainLayout, true).SetFocus(a.searchInput)
@@ -154,10 +165,15 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 		AddItem(a.thumbnailView, 20, 0, false).
 		AddItem(a.playerInfo, 0, 1, false)
 
+	// Barra de status com badge de modo no canto direito
+	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(a.statusBar, 0, 1, false).
+		AddItem(a.modeBadge, 18, 0, false)
+
 	return tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
 		AddItem(playerFlex, 5, 0, false).
-		AddItem(a.statusBar, 1, 0, false).
+		AddItem(statusBarFlex, 1, 0, false).
 		AddItem(a.commandBar, 1, 0, false)
 }
 

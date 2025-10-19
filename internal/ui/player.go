@@ -407,6 +407,7 @@ func (a *SimpleApp) toggleMode() {
 
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
+		a.updateModeBadge()
 		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playMode.String()))
 	})
 }

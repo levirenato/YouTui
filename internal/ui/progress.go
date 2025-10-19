@@ -135,3 +135,21 @@ func (a *SimpleApp) updatePlayerInfo() {
 
 	a.playerInfo.SetText(fmt.Sprintf("%s\n%s\n%s", status, progress, modeInfo))
 }
+
+// updateModeBadge atualiza a badge de modo estilo Neovim
+func (a *SimpleApp) updateModeBadge() {
+	a.mu.Lock()
+	mode := a.playMode
+	a.mu.Unlock()
+
+	var badge string
+	if mode == ModeVideo {
+		// Badge azul para vídeo (estilo VISUAL do Neovim)
+		badge = "[gray]m[-] [black:blue:b]   VÍDEO [-:-:-] "
+	} else {
+		// Badge verde para áudio (estilo INSERT do Neovim)
+		badge = "[gray]m[-] [black:green:b]   ÁUDIO [-:-:-] "
+	}
+
+	a.modeBadge.SetText(badge)
+}

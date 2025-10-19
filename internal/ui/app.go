@@ -68,6 +68,7 @@ type SimpleApp struct {
 	playerInfo    *tview.TextView
 	statusBar     *tview.TextView
 	commandBar    *tview.TextView
+	modeBadge     *tview.TextView
 	helpModal     *tview.Modal
 
 	tracks         []Track
@@ -93,7 +94,6 @@ type SimpleApp struct {
 	skipAutoPlay bool
 
 	thumbCache           *ThumbnailCache
-	useKittyImages       bool
 	detailsLoadingIdx    int
 	detailsLoadingMutex  sync.Mutex
 	detailsCancelFunc    context.CancelFunc
@@ -109,7 +109,6 @@ func NewSimpleApp() *SimpleApp {
 	theme := CatppuccinMocha
 
 	thumbCache, _ := NewThumbnailCache()
-	useKitty := IsKittyTerminal()
 
 	app := &SimpleApp{
 		app:            tview.NewApplication(),
@@ -120,7 +119,6 @@ func NewSimpleApp() *SimpleApp {
 		playMode:       ModeAudio,
 		currentTrack:   -1,
 		thumbCache:     thumbCache,
-		useKittyImages: useKitty,
 		theme:          &theme,
 	}
 

@@ -1,22 +1,18 @@
 package ui
 
 import (
-	"bytes"
 	"context"
 	"crypto/md5"
 	"fmt"
 	"image"
-	_ "image/jpeg"
+	"image/jpeg"
 	_ "image/png"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/dolmen-go/kittyimg"
 	"github.com/nfnt/resize"
 )
 
@@ -24,7 +20,6 @@ import (
 type ThumbnailCache struct {
 	cacheDir string
 	mu       sync.RWMutex
-	cache    map[string]string // URL -> escape code
 }
 
 // NewThumbnailCache cria um novo cache de thumbnails
@@ -41,7 +36,6 @@ func NewThumbnailCache() (*ThumbnailCache, error) {
 
 	return &ThumbnailCache{
 		cacheDir: cacheDir,
-		cache:    make(map[string]string),
 	}, nil
 }
 
@@ -55,11 +49,6 @@ func (tc *ThumbnailCache) hashURL(url string) string {
 func (tc *ThumbnailCache) getCachePath(url string) string {
 	hash := tc.hashURL(url)
 	return filepath.Join(tc.cacheDir, hash+".jpg")
-}
-
-// downloadImage baixa a imagem da URL (versão sem contexto)
-func (tc *ThumbnailCache) downloadImage(url string) (image.Image, error) {
-	return tc.downloadImageWithContext(context.Background(), url)
 }
 
 // downloadImageWithContext baixa a imagem da URL com suporte a cancelamento
@@ -91,8 +80,8 @@ func (tc *ThumbnailCache) downloadImageWithContext(ctx context.Context, url stri
 	return img, nil
 }
 
-// GetThumbnailImage retorna a imagem diretamente (sem escape codes)
-// Útil para tview.Image
+// GetThumbnailImage retorna a imagem diretamente
+// Usado para renderização com tview.Image (half-blocks Unicode)
 func (tc *ThumbnailCache) GetThumbnailImage(url string) (image.Image, error) {
 	return tc.GetThumbnailImageWithContext(context.Background(), url)
 }
@@ -124,7 +113,7 @@ func (tc *ThumbnailCache) GetThumbnailImageWithContext(ctx context.Context, url 
 		return nil, err
 	}
 
-	// CRÍTICO: Salva no cache para não baixar novamente
+	// Salva no cache para não baixar novamente
 	if err := tc.saveImageToCache(img, cachePath); err != nil {
 		// Log erro mas retorna a imagem mesmo assim
 		// (falha ao salvar não deve impedir uso)
@@ -142,94 +131,8 @@ func (tc *ThumbnailCache) saveImageToCache(img image.Image, cachePath string) er
 	defer f.Close()
 
 	// Redimensiona para tamanho pequeno (para uso em lista)
-	resized := resize.Thumbnail(120, 90, img, resize.Lanczos3)
+	resized := resize.Thumbnail(100, 100, img, resize.Lanczos3)
 
-	// Salva como JPEG no cache (kittyimg vai usar depois)
-	var buf bytes.Buffer
-	if err := kittyimg.Fprint(&buf, resized); err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, &buf)
-	return err
-}
-
-// GetThumbnail obtém o thumbnail (baixa se necessário) e retorna o escape code do Kitty
-func (tc *ThumbnailCache) GetThumbnail(url string, width, height int) (string, error) {
-	if url == "" {
-		return "", nil
-	}
-
-	tc.mu.RLock()
-	if cached, ok := tc.cache[url]; ok {
-		tc.mu.RUnlock()
-		return cached, nil
-	}
-	tc.mu.RUnlock()
-
-	cachePath := tc.getCachePath(url)
-
-	// Verifica se já existe em disco
-	var img image.Image
-	var err error
-
-	if _, statErr := os.Stat(cachePath); statErr == nil {
-		// Carrega do cache
-		f, err := os.Open(cachePath)
-		if err == nil {
-			defer f.Close()
-			img, _, err = image.Decode(f)
-		}
-	}
-
-	// Se não está em cache ou falhou ao carregar, baixa
-	if img == nil {
-		img, err = tc.downloadImage(url)
-		if err != nil {
-			return "", err
-		}
-
-		// Salva no cache
-		if err := tc.saveImageToCache(img, cachePath); err != nil {
-			// Não fatal, continua
-			_ = err
-		}
-	}
-
-	// Redimensiona para o tamanho desejado
-	resized := resize.Thumbnail(uint(width), uint(height), img, resize.Lanczos3)
-
-	// Gera escape code do Kitty
-	var buf bytes.Buffer
-	if err := kittyimg.Fprint(&buf, resized); err != nil {
-		return "", err
-	}
-
-	escapeCode := buf.String()
-
-	// Cacheia em memória
-	tc.mu.Lock()
-	tc.cache[url] = escapeCode
-	tc.mu.Unlock()
-
-	return escapeCode, nil
-}
-
-// GetThumbnailIcon retorna um ícone musical se thumbnail não disponível
-func (tc *ThumbnailCache) GetThumbnailIcon(url string) string {
-	if url == "" {
-		return " "
-	}
-
-	// Tenta obter thumbnail (assíncrono seria melhor, mas por ora síncrono)
-	// Retorna ícone como fallback
-	return " "
-}
-
-// IsKittyTerminal verifica se está rodando no Kitty
-func IsKittyTerminal() bool {
-	term := os.Getenv("TERM")
-	termProgram := os.Getenv("TERM_PROGRAM")
-
-	return strings.Contains(term, "kitty") || termProgram == "kitty"
+	// Salva como JPEG no cache
+	return jpeg.Encode(f, resized, &jpeg.Options{Quality: 90})
 }
