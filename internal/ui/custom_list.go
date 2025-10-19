@@ -216,6 +216,18 @@ func (c *CustomList) GetCurrentItem() int {
 	return c.selectedIndex
 }
 
+// SetCurrentIndex define o índice do item selecionado
+func (c *CustomList) SetCurrentIndex(idx int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	
+	if idx >= 0 && idx < len(c.items) {
+		c.selectedIndex = idx
+		c.scrollToSelection()
+		c.updateSelection()
+	}
+}
+
 // GetCurrentTrack retorna o track do item selecionado
 func (c *CustomList) GetCurrentTrack() *Track {
 	c.mu.Lock()

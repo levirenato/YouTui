@@ -41,18 +41,12 @@ func (a *SimpleApp) setupSearchComponents() {
 
 // setupPlaylistComponent cria o componente de playlist
 func (a *SimpleApp) setupPlaylistComponent() {
-	a.playlist = tview.NewList().
-		ShowSecondaryText(false).
-		SetMainTextColor(a.theme.Text).
-		SetSelectedTextColor(a.theme.Base).
-		SetSelectedBackgroundColor(a.theme.Blue)
-
-	a.playlist.SetBorder(true).
-		SetTitle(" Playlist [0] ").
-		SetTitleAlign(tview.AlignLeft).
-		SetBorderColor(a.theme.Surface0)
-
-	a.playlist.SetSelectedFunc(a.onPlaylistSelected)
+	// Cria lista customizada com thumbnails inline
+	a.playlist = NewCustomList(a.theme)
+	a.playlist.SetTitle(" Playlist [0] ")
+	a.playlist.SetSelectedFunc(func(idx int) {
+		a.onPlaylistSelectedCustom(idx)
+	})
 }
 
 // setupDetailsComponent cria o painel de detalhes
@@ -131,7 +125,7 @@ func (a *SimpleApp) setupLayout() {
 
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
-		AddItem(a.playlist, 0, 1, true)
+		AddItem(a.playlist.Flex, 0, 1, true)
 
 	playerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.thumbnailView, 20, 0, false).
@@ -154,7 +148,7 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
-		AddItem(a.playlist, 0, 1, true)
+		AddItem(a.playlist.Flex, 0, 1, true)
 
 	playerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.thumbnailView, 20, 0, false).
@@ -193,9 +187,9 @@ func (a *SimpleApp) setupInputHandlers() {
 		case tcell.KeyTab:
 			switch focused {
 			case a.searchResults.Flex:
-				a.app.SetFocus(a.playlist)
+				a.app.SetFocus(a.playlist.Flex)
 				a.updateCommandBar()
-			case a.playlist:
+			case a.playlist.Flex:
 				a.app.SetFocus(a.searchInput)
 				a.updateCommandBar()
 			}

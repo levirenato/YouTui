@@ -23,21 +23,21 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 		}
 
 	case 'd':
-		if focused == a.playlist {
+		if focused == a.playlist.Flex {
 			idx := a.playlist.GetCurrentItem()
 			go a.removeFromPlaylist(idx)
 			return nil
 		}
 
 	case 'J':
-		if focused == a.playlist {
+		if focused == a.playlist.Flex {
 			idx := a.playlist.GetCurrentItem()
 			go a.movePlaylistItem(idx, idx+1)
 			return nil
 		}
 
 	case 'K':
-		if focused == a.playlist {
+		if focused == a.playlist.Flex {
 			idx := a.playlist.GetCurrentItem()
 			go a.movePlaylistItem(idx, idx-1)
 			return nil
@@ -104,9 +104,6 @@ func (a *SimpleApp) updateCommandBar() {
 
 	var help string
 	
-	// DEBUG: Mostra tipo do foco no status bar temporariamente
-	// a.statusBar.SetText(fmt.Sprintf("[yellow]DEBUG: focused=%T, searchResults=%T", focused, a.searchResults.Flex))
-	
 	switch focused {
 	case a.searchInput:
 		a.searchInput.SetBorderColor(a.theme.Blue)
@@ -116,7 +113,7 @@ func (a *SimpleApp) updateCommandBar() {
 		a.searchResults.SetBorderColor(a.theme.Blue)
 		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
 
-	case a.playlist:
+	case a.playlist.Flex:
 		a.playlist.SetBorderColor(a.theme.Blue)
 		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#a6e3a1]c[-] Pause | [#89dceb]n/b[-] Next/Prev | [#f9e2af]?[-] Ajuda"
 

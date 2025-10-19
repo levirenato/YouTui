@@ -2,19 +2,17 @@ package ui
 
 import (
 	"fmt"
-
-	"github.com/levirenato/YouTui/internal/ui/components"
 )
 
-// onPlaylistSelected é chamado quando Enter é pressionado na playlist
-func (a *SimpleApp) onPlaylistSelected(idx int, _ string, _ string, _ rune) {
-	a.mu.Lock()
-	if idx >= 0 && idx < len(a.playlistTracks) {
-		track := a.playlistTracks[idx]
+// onPlaylistSelectedCustom é chamado quando Enter é pressionado na playlist
+func (a *SimpleApp) onPlaylistSelectedCustom(idx int) {
+	track := a.playlist.GetCurrentTrack()
+	if track != nil {
+		// Pega o índice real da playlist
+		a.mu.Lock()
+		realIdx := a.playlist.GetCurrentItem()
 		a.mu.Unlock()
-		go a.playTrackSimple(track, idx)
-	} else {
-		a.mu.Unlock()
+		go a.playTrackSimple(*track, realIdx)
 	}
 }
 
@@ -23,11 +21,23 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 	a.mu.Lock()
 	a.playlistTracks = append(a.playlistTracks, track)
 	count := len(a.playlistTracks)
-	icon := components.GetPlaylistIcon(count - 1)
+	index := count - 1
 	a.mu.Unlock()
 
 	a.app.QueueUpdateDraw(func() {
-		a.playlist.AddItem(fmt.Sprintf("%s %s", icon, track.Title), "", 0, nil)
+		// Adiciona item com thumbnail inline
+		a.playlist.AddItem(track, index)
+		
+		// Carrega thumbnail em background (usa cache!)
+		if track.Thumbnail != "" && a.thumbCache != nil {
+			go func(idx int, url string) {
+				img, err := a.thumbCache.GetThumbnailImage(url)
+				if err == nil && img != nil {
+					a.playlist.SetThumbnail(idx, img)
+				}
+			}(index, track.Thumbnail)
+		}
+		
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
 		a.statusBar.SetText(fmt.Sprintf("[green]✓ Adicionado: %s", track.Title))
 	})
@@ -58,8 +68,18 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 	a.app.QueueUpdateDraw(func() {
 		a.playlist.Clear()
 		for i, t := range tracks {
-			icon := components.GetPlaylistIcon(i)
-			a.playlist.AddItem(fmt.Sprintf("%s %s", icon, t.Title), "", 0, nil)
+			// Adiciona item com thumbnail
+			a.playlist.AddItem(t, i)
+			
+			// Carrega thumbnail em background (usa cache!)
+			if t.Thumbnail != "" && a.thumbCache != nil {
+				go func(idx int, url string) {
+					img, err := a.thumbCache.GetThumbnailImage(url)
+					if err == nil && img != nil {
+						a.playlist.SetThumbnail(idx, img)
+					}
+				}(i, t.Thumbnail)
+			}
 		}
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
 		a.statusBar.SetText("[yellow]✓ Removido da playlist")
@@ -98,10 +118,20 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 	a.app.QueueUpdateDraw(func() {
 		a.playlist.Clear()
 		for i, t := range tracks {
-			icon := components.GetPlaylistIcon(i)
-			a.playlist.AddItem(fmt.Sprintf("%s %s", icon, t.Title), "", 0, nil)
+			// Adiciona item com thumbnail
+			a.playlist.AddItem(t, i)
+			
+			// Carrega thumbnail em background (usa cache!)
+			if t.Thumbnail != "" && a.thumbCache != nil {
+				go func(idx int, url string) {
+					img, err := a.thumbCache.GetThumbnailImage(url)
+					if err == nil && img != nil {
+						a.playlist.SetThumbnail(idx, img)
+					}
+				}(i, t.Thumbnail)
+			}
 		}
-		a.playlist.SetCurrentItem(newPos)
+		a.playlist.SetCurrentIndex(newPos)
 		a.statusBar.SetText("[cyan]✓ Item movido")
 	})
 }

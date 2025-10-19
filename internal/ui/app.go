@@ -60,7 +60,7 @@ type SimpleApp struct {
 	app           *tview.Application
 	searchInput   *tview.InputField
 	searchResults *CustomList
-	playlist      *tview.List
+	playlist      *CustomList
 	detailsView   *tview.Flex
 	detailsThumb  *tview.Image
 	detailsText   *tview.TextView
