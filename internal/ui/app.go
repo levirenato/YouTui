@@ -21,11 +21,11 @@ const (
 func (m PlaylistMode) String() string {
 	switch m {
 	case ModeShuffle:
-		return "🔀 Shuffle"
+		return " Shuffle"
 	case ModeRepeatOne:
-		return "🔂 Repeat 1"
+		return "󰑘 Repeat 1"
 	case ModeRepeatAll:
-		return "🔁 Repeat All"
+		return "󰑖 Repeat All"
 	default:
 		return "▶ Normal"
 	}

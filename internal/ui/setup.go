@@ -65,7 +65,7 @@ func (a *SimpleApp) setupDetailsComponent() {
 		SetDirection(tview.FlexColumn).
 		AddItem(a.detailsThumb, 20, 0, false).
 		AddItem(a.detailsText, 0, 1, false)
-	
+
 	a.detailsView.SetBorder(true).
 		SetTitle(" Detalhes ").
 		SetBorderColor(a.theme.Surface0)
@@ -76,9 +76,9 @@ func (a *SimpleApp) setupPlayerComponents() {
 	a.thumbnailView = tview.NewImage().
 		SetColors(tview.TrueColor).
 		SetDithering(tview.DitheringFloydSteinberg)
-	
+
 	a.thumbnailView.SetBorder(true).
-		SetTitle("  ").
+		SetTitle("  ").
 		SetBorderColor(a.theme.Mauve)
 
 	a.playerInfo = tview.NewTextView().
