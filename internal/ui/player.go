@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os/exec"
 	"time"
 )
@@ -95,6 +95,25 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 			shouldPlayNext = true
 			nextTrack = track
 			nextIdx = idx
+
+		case ModeShuffle:
+			// Modo shuffle: toca música aleatória (diferente da atual)
+			if len(a.playlistTracks) > 0 {
+				if len(a.playlistTracks) == 1 {
+					// Se só tem 1 música, repete ela
+					nextIdx = 0
+				} else {
+					// Escolhe uma música diferente da atual
+					for {
+						nextIdx = rand.IntN(len(a.playlistTracks))
+						if nextIdx != idx {
+							break
+						}
+					}
+				}
+				shouldPlayNext = true
+				nextTrack = a.playlistTracks[nextIdx]
+			}
 
 		case ModeRepeatAll, ModeNormal:
 			if len(a.playlistTracks) > 0 {
@@ -288,7 +307,17 @@ func (a *SimpleApp) playNext() {
 	var next int
 
 	if a.playlistMode == ModeShuffle {
-		next = rand.Intn(playlistLen)
+		// Shuffle: escolhe música diferente da atual
+		if playlistLen == 1 {
+			next = 0 // Só tem 1 música
+		} else {
+			for {
+				next = rand.IntN(playlistLen)
+				if next != currentTrack {
+					break
+				}
+			}
+		}
 	} else {
 		next = currentTrack + 1
 		if next >= playlistLen {
