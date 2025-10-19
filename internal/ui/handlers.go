@@ -14,15 +14,10 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 		return nil
 
 	case 'a':
-		if focused == a.searchResults {
-			idx := a.searchResults.GetCurrentItem()
-			a.mu.Lock()
-			if idx >= 0 && idx < len(a.tracks) {
-				track := a.tracks[idx]
-				a.mu.Unlock()
-				go a.addToPlaylist(track)
-			} else {
-				a.mu.Unlock()
+		if focused == a.searchResults.Flex {
+			track := a.searchResults.GetCurrentTrack()
+			if track != nil {
+				go a.addToPlaylist(*track)
 			}
 			return nil
 		}
@@ -80,6 +75,20 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 		a.app.SetFocus(a.searchInput)
 		a.updateCommandBar()
 		return nil
+
+	case ']':
+		// Próxima página (só nos resultados)
+		if focused == a.searchResults.Flex {
+			go a.nextPage()
+			return nil
+		}
+
+	case '[':
+		// Página anterior (só nos resultados)
+		if focused == a.searchResults.Flex {
+			go a.prevPage()
+			return nil
+		}
 	}
 
 	return event
@@ -94,14 +103,18 @@ func (a *SimpleApp) updateCommandBar() {
 	a.playlist.SetBorderColor(a.theme.Surface0)
 
 	var help string
+	
+	// DEBUG: Mostra tipo do foco no status bar temporariamente
+	// a.statusBar.SetText(fmt.Sprintf("[yellow]DEBUG: focused=%T, searchResults=%T", focused, a.searchResults.Flex))
+	
 	switch focused {
 	case a.searchInput:
 		a.searchInput.SetBorderColor(a.theme.Blue)
 		help = "Digite para buscar | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
 
-	case a.searchResults:
+	case a.searchResults.Flex:
 		a.searchResults.SetBorderColor(a.theme.Blue)
-		help = "[#89b4fa]↑/↓[-] Navegar | [#89b4fa]Enter[-] Tocar | [#a6e3a1]a[-] Add | [#89b4fa]Tab[-] Próximo | [#89b4fa]/[-] Buscar | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
+		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
 
 	case a.playlist:
 		a.playlist.SetBorderColor(a.theme.Blue)

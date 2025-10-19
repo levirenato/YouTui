@@ -59,7 +59,7 @@ type Track struct {
 type SimpleApp struct {
 	app           *tview.Application
 	searchInput   *tview.InputField
-	searchResults *tview.List
+	searchResults *CustomList
 	playlist      *tview.List
 	detailsView   *tview.Flex
 	detailsThumb  *tview.Image
@@ -72,6 +72,7 @@ type SimpleApp struct {
 
 	tracks         []Track
 	playlistTracks []Track
+	pagination     *Pagination
 
 	mpvProcess   *exec.Cmd
 	mpvSocket    string
@@ -114,6 +115,7 @@ func NewSimpleApp() *SimpleApp {
 		app:            tview.NewApplication(),
 		tracks:         []Track{},
 		playlistTracks: []Track{},
+		pagination:     NewPagination(10), // 10 itens por página
 		playlistMode:   ModeNormal,
 		playMode:       ModeAudio,
 		currentTrack:   -1,

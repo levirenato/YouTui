@@ -7,7 +7,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/levirenato/YouTui/internal/search"
-	"github.com/levirenato/YouTui/internal/ui/components"
 )
 
 // onSearchDone é chamado quando Enter é pressionado na busca
@@ -54,30 +53,86 @@ func (a *SimpleApp) doSearch(query string) {
 	copy(tracksCopy, a.tracks)
 	a.mu.Unlock()
 
+	// Configura paginação e exibe primeira página
+	a.pagination.SetTotalItems(len(tracksCopy))
+	a.pagination.Reset()
+
+	a.displayCurrentPage()
+	
 	a.app.QueueUpdateDraw(func() {
-		// CRÍTICO: Desabilita SetChangedFunc temporariamente para evitar
-		// disparar 30 chamadas simultâneas ao yt-dlp ao adicionar itens
-		a.searchResults.SetChangedFunc(nil)
-
-		a.searchResults.Clear()
-		for i, track := range tracksCopy {
-			icon := components.GetTrackIcon(i)
-			title := fmt.Sprintf("%s %s - %s", icon, track.Title, track.Author)
-			a.searchResults.AddItem(title, "", 0, nil)
-		}
-		a.searchResults.SetTitle(fmt.Sprintf(" Resultados [%d] ", len(tracksCopy)))
-		a.statusBar.SetText(fmt.Sprintf("[green]✓ Encontrados %d resultados", len(tracksCopy)))
-
-		// Reabilita o handler DEPOIS de adicionar todos os itens
-		a.searchResults.SetChangedFunc(a.onResultChanged)
-
-		a.app.SetFocus(a.searchResults)
+		a.statusBar.SetText(fmt.Sprintf("[green]✓ Encontrados %d resultados (Página 1/%d)", 
+			len(tracksCopy), a.pagination.GetTotalPages()))
+		a.app.SetFocus(a.searchResults.Flex)
 		a.updateCommandBar()
-
-		// Carrega detalhes do primeiro item de forma assíncrona
-		// para não bloquear a UI thread
-		if len(tracksCopy) > 0 {
-			go a.updateSearchDetails(0)
-		}
 	})
+}
+
+// displayCurrentPage exibe os itens da página atual com formato expandido
+func (a *SimpleApp) displayCurrentPage() {
+	a.mu.Lock()
+	start, end := a.pagination.GetPageItems()
+	
+	var pageItems []Track
+	if start < len(a.tracks) {
+		if end > len(a.tracks) {
+			end = len(a.tracks)
+		}
+		pageItems = a.tracks[start:end]
+	}
+	a.mu.Unlock()
+
+	a.app.QueueUpdateDraw(func() {
+		a.searchResults.Clear()
+		
+		for i, track := range pageItems {
+			// Adiciona item com thumbnail inline
+			a.searchResults.AddItem(track, i)
+			
+			// Carrega thumbnail em background
+			if track.Thumbnail != "" && a.thumbCache != nil {
+				go func(idx int, url string) {
+					img, err := a.thumbCache.GetThumbnailImage(url)
+					if err == nil && img != nil {
+						a.searchResults.SetThumbnail(idx, img)
+					}
+				}(i, track.Thumbnail)
+			}
+		}
+		
+		currentPage := a.pagination.GetCurrentPage() + 1
+		totalPages := a.pagination.GetTotalPages()
+		a.searchResults.SetTitle(fmt.Sprintf(" Resultados [Página %d/%d] ", currentPage, totalPages))
+	})
+}
+
+// nextPage avança para a próxima página
+func (a *SimpleApp) nextPage() {
+	if a.pagination.NextPage() {
+		a.displayCurrentPage()
+		currentPage := a.pagination.GetCurrentPage() + 1
+		totalPages := a.pagination.GetTotalPages()
+		a.app.QueueUpdateDraw(func() {
+			a.statusBar.SetText(fmt.Sprintf("[cyan]→ Página %d/%d", currentPage, totalPages))
+		})
+	} else {
+		a.app.QueueUpdateDraw(func() {
+			a.statusBar.SetText("[yellow]⚠ Já está na última página")
+		})
+	}
+}
+
+// prevPage volta para a página anterior
+func (a *SimpleApp) prevPage() {
+	if a.pagination.PrevPage() {
+		a.displayCurrentPage()
+		currentPage := a.pagination.GetCurrentPage() + 1
+		totalPages := a.pagination.GetTotalPages()
+		a.app.QueueUpdateDraw(func() {
+			a.statusBar.SetText(fmt.Sprintf("[cyan]← Página %d/%d", currentPage, totalPages))
+		})
+	} else {
+		a.app.QueueUpdateDraw(func() {
+			a.statusBar.SetText("[yellow]⚠ Já está na primeira página")
+		})
+	}
 }
