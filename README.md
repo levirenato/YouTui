@@ -7,7 +7,8 @@ Player de YouTube para terminal com interface TUI moderna.
 
 ## O que faz?
 
-YouTui é um player de YouTube que roda inteiramente no terminal, permitindo buscar, tocar músicas/vídeos e gerenciar playlists sem sair da linha de comando. Interface bonita com thumbnails inline, controles completos e tema Catppuccin Mocha.
+YouTui é um player de YouTube que roda inteiramente no terminal, permitindo buscar, tocar músicas/vídeos e gerenciar playlists sem sair da linha de comando, contem modo video e audio. e o melhor sem anuncios. 
+
 
 **Recursos principais:**
 
@@ -17,6 +18,10 @@ YouTui é um player de YouTube que roda inteiramente no terminal, permitindo bus
 - Controles completos (play, pause, next, previous)
 - Barra de progresso em tempo real
 - Interface colorida e moderna
+## Screenshots
+<img width="1917" height="1045" alt="image" src="https://github.com/user-attachments/assets/94df9e10-d1d5-4065-b668-0ae003def764" />
+<img width="1903" height="1036" alt="image" src="https://github.com/user-attachments/assets/e4c9957a-c14b-4c68-9bf1-7a00e3579900" />
+
 
 ## Dependências
 
