@@ -47,6 +47,21 @@ func (a *SimpleApp) setupPlaylistComponent() {
 	a.playlist.SetSelectedFunc(func(idx int) {
 		a.onPlaylistSelectedCustom(idx)
 	})
+	
+	// Footer com indicador de modo da playlist (dentro da box)
+	a.playlistFooter = tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetTextColor(a.theme.Subtext0)
+	a.playlistFooter.SetBackgroundColor(a.theme.Base)
+	a.updatePlaylistFooter()
+	
+	// Adiciona o footer dentro do Flex da playlist
+	// O playlist.Flex já tem um container interno, vamos adicionar o footer nele
+	playlistContainer := a.playlist.GetItem(0) // Container de items
+	a.playlist.Flex.Clear()
+	a.playlist.Flex.AddItem(playlistContainer, 0, 1, false)
+	a.playlist.Flex.AddItem(a.playlistFooter, 1, 0, false)
 }
 
 // setupDetailsComponent cria o painel de detalhes
@@ -77,18 +92,27 @@ func (a *SimpleApp) setupPlayerComponents() {
 		SetColors(tview.TrueColor).
 		SetDithering(tview.DitheringFloydSteinberg)
 
-	a.thumbnailView.SetBorder(true).
-		SetTitle("  ").
-		SetBorderColor(a.theme.Mauve)
+	a.thumbnailView.SetBorder(false)
 
 	a.playerInfo = tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignLeft).
 		SetTextColor(a.theme.Text)
 
-	a.playerInfo.SetBorder(true).
+	a.playerInfo.SetBorder(false)
+	
+	// PlayerBox focável para receber controles quando selecionado
+	// Agora com borda própria que muda quando selecionado
+	playerContent := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(a.thumbnailView, 20, 0, false).
+		AddItem(a.playerInfo, 0, 1, false)
+	
+	a.playerBox = tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(playerContent, 0, 1, false)
+	
+	a.playerBox.SetBorder(true).
 		SetTitle(" Player ").
-		SetBorderColor(a.theme.Mauve)
+		SetBorderColor(a.theme.Surface0)
 }
 
 // setupStatusBars cria as barras de status e comandos
@@ -129,13 +153,10 @@ func (a *SimpleApp) setupLayout() {
 		AddItem(a.searchInput, 3, 0, true).
 		AddItem(a.searchResults.Flex, 0, 1, true)
 
+	// playlist.Flex já contém o footer integrado
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
 		AddItem(a.playlist.Flex, 0, 1, true)
-
-	playerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(a.thumbnailView, 20, 0, false).
-		AddItem(a.playerInfo, 0, 1, false)
 
 	// Barra de status com badge de modo no canto direito
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
@@ -144,7 +165,7 @@ func (a *SimpleApp) setupLayout() {
 
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
-		AddItem(playerFlex, 5, 0, false).
+		AddItem(a.playerBox, 5, 0, false).
 		AddItem(statusBarFlex, 1, 0, false).
 		AddItem(a.commandBar, 1, 0, false)
 
@@ -157,13 +178,10 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 		AddItem(a.searchInput, 3, 0, true).
 		AddItem(a.searchResults.Flex, 0, 1, true)
 
+	// playlist.Flex já contém o footer integrado
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
 		AddItem(a.playlist.Flex, 0, 1, true)
-
-	playerFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(a.thumbnailView, 20, 0, false).
-		AddItem(a.playerInfo, 0, 1, false)
 
 	// Barra de status com badge de modo no canto direito
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
@@ -172,7 +190,7 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 
 	return tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
-		AddItem(playerFlex, 5, 0, false).
+		AddItem(a.playerBox, 5, 0, false).
 		AddItem(statusBarFlex, 1, 0, false).
 		AddItem(a.commandBar, 1, 0, false)
 }
@@ -181,6 +199,13 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 func (a *SimpleApp) setupInputHandlers() {
 	a.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focused := a.app.GetFocus()
+
+		// Ctrl+Q para sair (UNIVERSAL)
+		if event.Key() == tcell.KeyCtrlQ {
+			a.cleanup()
+			a.app.Stop()
+			return nil
+		}
 
 		// Ajuda global
 		if event.Rune() == '?' && focused != a.searchInput {
@@ -198,7 +223,7 @@ func (a *SimpleApp) setupInputHandlers() {
 			return event
 		}
 
-		// Tab para navegar entre painéis
+		// Tab para navegar entre painéis (incluindo player)
 		switch event.Key() {
 		case tcell.KeyTab:
 			switch focused {
@@ -206,6 +231,9 @@ func (a *SimpleApp) setupInputHandlers() {
 				a.app.SetFocus(a.playlist.Flex)
 				a.updateCommandBar()
 			case a.playlist.Flex:
+				a.app.SetFocus(a.playerBox)
+				a.updateCommandBar()
+			case a.playerBox:
 				a.app.SetFocus(a.searchInput)
 				a.updateCommandBar()
 			}
@@ -222,7 +250,7 @@ func (a *SimpleApp) getHelpText() string {
 	return `ATALHOS DO YOUTUI
 
 NAVEGAÇÃO:
-  Tab       Alternar entre painéis
+  Tab       Alternar entre painéis (Busca → Resultados → Playlist → Player)
   /         Focar na busca
   ↑/↓       Navegar nas listas
   ?         Mostrar esta ajuda
@@ -236,27 +264,26 @@ RESULTADOS:
   a         Adicionar à playlist
   [ ]       Navegar entre páginas (anterior/próxima)
 
-PLAYLIST:
+PLAYLIST (quando focada):
   Enter     Tocar faixa da playlist
   Space     Tocar playlist do início
   d         Remover item
   J         Mover item para baixo
   K         Mover item para cima
+  r         Ciclar repetição (󰑗 → 󰑘 → 󰑖 → 󰑗)
+  h         Toggle shuffle ()
 
-PLAYER (Global):
-  c/Space   Pause/Play
+PLAYER (quando focado):
+  Space     Pause/Play
   s         Stop
-  n         Próxima (só funciona tocando da playlist)
-  b         Anterior (só funciona tocando da playlist)
+  n         Próxima música
+  p         Música anterior
+  
+CONTROLES GLOBAIS:
   m         Alternar áudio/vídeo
-  r         Ciclar repetição
-  h         Toggle shuffle
+  Ctrl+Q    Sair da aplicação
 
-IMPORTANTE:
-  n/b só funcionam quando tocando da PLAYLIST!
-  Para tocar da playlist: Entre na Playlist e pressione Enter ou Space
-
-GERAL:
-  q         Sair
+ÍCONES DA PLAYLIST:
+  󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório
 `
 }

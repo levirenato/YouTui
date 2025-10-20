@@ -8,11 +8,6 @@ import (
 // handleKeyPress processa as teclas pressionadas globalmente
 func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitive) *tcell.EventKey {
 	switch event.Rune() {
-	case 'q':
-		a.cleanup()
-		a.app.Stop()
-		return nil
-
 	case 'a':
 		if focused == a.searchResults.Flex {
 			track := a.searchResults.GetCurrentTrack()
@@ -43,30 +38,45 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
+	// Controles da PLAYLIST (r, h)
 	case 'r':
-		go a.cycleRepeatMode()
-		return nil
+		if focused == a.playlist.Flex {
+			go a.cycleRepeatMode()
+			return nil
+		}
 
 	case 'h':
-		go a.toggleShuffle()
-		return nil
+		if focused == a.playlist.Flex {
+			go a.toggleShuffle()
+			return nil
+		}
 
+	// Controles do PLAYER (space, n, b, s)
 	case 'c', ' ':
-		go a.togglePause()
-		return nil
+		if focused == a.playerBox {
+			go a.togglePause()
+			return nil
+		}
 
 	case 's':
-		go a.stopPlayback()
-		return nil
+		if focused == a.playerBox {
+			go a.stopPlayback()
+			return nil
+		}
 
 	case 'n':
-		go a.playNext()
-		return nil
+		if focused == a.playerBox {
+			go a.playNext()
+			return nil
+		}
 
-	case 'b':
-		go a.playPrevious()
-		return nil
+	case 'p':
+		if focused == a.playerBox {
+			go a.playPrevious()
+			return nil
+		}
 
+	// Controle global (m)
 	case 'm':
 		go a.toggleMode()
 		return nil
@@ -101,24 +111,29 @@ func (a *SimpleApp) updateCommandBar() {
 	a.searchInput.SetBorderColor(a.theme.Surface0)
 	a.searchResults.SetBorderColor(a.theme.Surface0)
 	a.playlist.SetBorderColor(a.theme.Surface0)
+	a.playerBox.SetBorderColor(a.theme.Surface0)
 
 	var help string
 	
 	switch focused {
 	case a.searchInput:
 		a.searchInput.SetBorderColor(a.theme.Blue)
-		help = "Digite para buscar | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
+		help = "Digite para buscar | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]Ctrl+Q[-] Sair | [#f9e2af]?[-] Ajuda"
 
 	case a.searchResults.Flex:
 		a.searchResults.SetBorderColor(a.theme.Blue)
-		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
+		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]Ctrl+Q[-] Sair"
 
 	case a.playlist.Flex:
 		a.playlist.SetBorderColor(a.theme.Blue)
-		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#a6e3a1]c[-] Pause | [#89dceb]n/b[-] Next/Prev | [#f9e2af]?[-] Ajuda"
+		help = "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle"
+
+	case a.playerBox:
+		a.playerBox.SetBorderColor(a.theme.Blue)
+		help = "[#a6e3a1]Space[-] Pause/Play | [#89dceb]n[-] Next | [#89dceb]p[-] Prev | [#f38ba8]s[-] Stop | [#cba6f7]m[-] Modo"
 
 	default:
-		help = "[#89b4fa]Tab[-] Navegar | [#a6e3a1]a[-] Add | [#f38ba8]d[-] Del | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#a6e3a1]c[-] Pause | [#89dceb]n/b[-] Next/Prev | [#f38ba8]q[-] Sair | [#f9e2af]?[-] Ajuda"
+		help = "[#89b4fa]Tab[-] Navegar entre painéis | [#f38ba8]Ctrl+Q[-] Sair | [#f9e2af]?[-] Ajuda"
 	}
 
 	a.commandBar.SetText(help)

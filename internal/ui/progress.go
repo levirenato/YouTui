@@ -145,11 +145,32 @@ func (a *SimpleApp) updateModeBadge() {
 	var badge string
 	if mode == ModeVideo {
 		// Badge azul para vídeo (estilo VISUAL do Neovim)
-		badge = "[gray]m[-] [black:blue:b]   VÍDEO [-:-:-] "
+		badge = "[gray]m[-] [black:blue:b]   VÍDEO [-:-:-] "
 	} else {
 		// Badge verde para áudio (estilo INSERT do Neovim)
-		badge = "[gray]m[-] [black:green:b]   ÁUDIO [-:-:-] "
+		badge = "[gray]m[-] [black:green:b]   ÁUDIO [-:-:-] "
 	}
 
 	a.modeBadge.SetText(badge)
+}
+
+// updatePlaylistFooter atualiza o footer da playlist com o ícone do modo
+func (a *SimpleApp) updatePlaylistFooter() {
+	a.mu.Lock()
+	mode := a.playlistMode
+	a.mu.Unlock()
+
+	var footer string
+	switch mode {
+	case ModeShuffle:
+		footer = "[#94e2d5]  Aleatório[-]"
+	case ModeRepeatOne:
+		footer = "[#fab387]󰑘 Repetir Uma[-]"
+	case ModeRepeatAll:
+		footer = "[#a6e3a1]󰑖 Repetir Todas[-]"
+	default:
+		footer = "[#585b70]󰑗 Sem Repetição[-]"
+	}
+
+	a.playlistFooter.SetText(footer)
 }

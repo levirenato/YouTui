@@ -149,6 +149,7 @@ func (a *SimpleApp) cycleRepeatMode() {
 
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
+		a.updatePlaylistFooter()
 		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playlistMode.String()))
 	})
 }
@@ -163,6 +164,7 @@ func (a *SimpleApp) toggleShuffle() {
 
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
+		a.updatePlaylistFooter()
 		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playlistMode.String()))
 	})
 }

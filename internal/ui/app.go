@@ -66,6 +66,8 @@ type SimpleApp struct {
 	detailsText   *tview.TextView
 	thumbnailView *tview.Image
 	playerInfo    *tview.TextView
+	playerBox     *tview.Flex
+	playlistFooter *tview.TextView
 	statusBar     *tview.TextView
 	commandBar    *tview.TextView
 	modeBadge     *tview.TextView
