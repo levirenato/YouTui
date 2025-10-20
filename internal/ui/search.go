@@ -9,7 +9,6 @@ import (
 	"github.com/levirenato/YouTui/internal/search"
 )
 
-// onSearchDone is called when Enter is pressed in search
 func (a *SimpleApp) onSearchDone(key tcell.Key) {
 	if key == tcell.KeyEnter {
 		query := a.searchInput.GetText()
@@ -19,7 +18,6 @@ func (a *SimpleApp) onSearchDone(key tcell.Key) {
 	}
 }
 
-// doSearch performs a YouTube search
 func (a *SimpleApp) doSearch(query string) {
 	a.app.QueueUpdateDraw(func() {
 		a.statusBar.SetText("[yellow]  " + a.strings.Searching)
@@ -31,7 +29,7 @@ func (a *SimpleApp) doSearch(query string) {
 	results, err := search.SearchVideos(ctx, query, 30)
 	if err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ " + a.strings.SearchError, err))
+			a.statusBar.SetText(fmt.Sprintf("[red]❌ "+a.strings.SearchError, err))
 		})
 		return
 	}
@@ -53,25 +51,23 @@ func (a *SimpleApp) doSearch(query string) {
 	copy(tracksCopy, a.tracks)
 	a.mu.Unlock()
 
-	// Setup pagination and display first page
 	a.pagination.SetTotalItems(len(tracksCopy))
 	a.pagination.Reset()
 
 	a.displayCurrentPage()
-	
+
 	a.app.QueueUpdateDraw(func() {
-		a.statusBar.SetText(fmt.Sprintf("[green]✓ " + a.strings.FoundResults, 
+		a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.FoundResults,
 			len(tracksCopy), 1, a.pagination.GetTotalPages()))
 		a.app.SetFocus(a.searchResults.Flex)
 		a.updateCommandBar()
 	})
 }
 
-// displayCurrentPage displays current page items
 func (a *SimpleApp) displayCurrentPage() {
 	a.mu.Lock()
 	start, end := a.pagination.GetPageItems()
-	
+
 	var pageItems []Track
 	if start < len(a.tracks) {
 		if end > len(a.tracks) {
@@ -83,12 +79,10 @@ func (a *SimpleApp) displayCurrentPage() {
 
 	a.app.QueueUpdateDraw(func() {
 		a.searchResults.Clear()
-		
+
 		for i, track := range pageItems {
-			// Add item with thumbnail inline
 			a.searchResults.AddItem(track, i)
-			
-			// Load thumbnail in background (uses cache)
+
 			if track.Thumbnail != "" && a.thumbCache != nil {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
@@ -98,21 +92,20 @@ func (a *SimpleApp) displayCurrentPage() {
 				}(i, track.Thumbnail)
 			}
 		}
-		
+
 		currentPage := a.pagination.GetCurrentPage() + 1
 		totalPages := a.pagination.GetTotalPages()
-		a.searchResults.SetTitle(fmt.Sprintf(" Resultados [Página %d/%d] ", currentPage, totalPages))
+		a.searchResults.SetTitle(fmt.Sprintf(" %s [%s %d/%d] ", a.strings.Results, a.strings.Page, currentPage, totalPages))
 	})
 }
 
-// nextPage advances to the next page
 func (a *SimpleApp) nextPage() {
 	if a.pagination.NextPage() {
 		a.displayCurrentPage()
 		currentPage := a.pagination.GetCurrentPage() + 1
 		totalPages := a.pagination.GetTotalPages()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[cyan]→ " + a.strings.NextPage, currentPage, totalPages))
+			a.statusBar.SetText(fmt.Sprintf("[cyan]→ "+a.strings.NextPage, currentPage, totalPages))
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {
@@ -121,14 +114,13 @@ func (a *SimpleApp) nextPage() {
 	}
 }
 
-// prevPage goes to the previous page
 func (a *SimpleApp) prevPage() {
 	if a.pagination.PrevPage() {
 		a.displayCurrentPage()
 		currentPage := a.pagination.GetCurrentPage() + 1
 		totalPages := a.pagination.GetTotalPages()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[cyan]← " + a.strings.PrevPage, currentPage, totalPages))
+			a.statusBar.SetText(fmt.Sprintf("[cyan]← "+a.strings.PrevPage, currentPage, totalPages))
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {

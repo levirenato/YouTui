@@ -2,12 +2,11 @@ package ui
 
 import (
 	"fmt"
-	
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-// setupUI configura todos os componentes da interface
 func (a *SimpleApp) setupUI() {
 	a.setupSearchComponents()
 	a.setupPlaylistComponent()
@@ -20,38 +19,33 @@ func (a *SimpleApp) setupUI() {
 	a.setupInputHandlers()
 }
 
-// setupSearchComponents cria os componentes de busca e resultados
 func (a *SimpleApp) setupSearchComponents() {
 	a.searchInput = tview.NewInputField().
 		SetLabel(" ").
-		SetFieldWidth(0).
 		SetFieldBackgroundColor(a.theme.Surface0).
 		SetFieldTextColor(a.theme.Text)
 
 	a.searchInput.SetBorder(true).
-		SetTitle(" Busca ").
+		SetTitle(" " + a.strings.Search + " ").
 		SetTitleAlign(tview.AlignLeft).
 		SetBorderColor(a.theme.Blue)
 
 	a.searchInput.SetDoneFunc(a.onSearchDone)
 
-	// Cria lista customizada com thumbnails inline
 	a.searchResults = NewCustomList(a.theme)
+	a.searchResults.SetTitle(" " + a.strings.Results + " [0] ")
 	a.searchResults.SetSelectedFunc(func(idx int) {
 		a.onResultSelectedCustom(idx)
 	})
 }
 
-// setupPlaylistComponent cria o componente de playlist
 func (a *SimpleApp) setupPlaylistComponent() {
-	// Cria lista customizada com thumbnails inline
 	a.playlist = NewCustomList(a.theme)
-	a.playlist.SetTitle(" Playlist [0] ")
+	a.playlist.SetTitle(fmt.Sprintf(" %s [0] ", a.strings.Playlist))
 	a.playlist.SetSelectedFunc(func(idx int) {
 		a.onPlaylistSelectedCustom(idx)
 	})
 
-	// Footer com indicador de modo da playlist (dentro da box)
 	a.playlistFooter = tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter).
@@ -59,15 +53,12 @@ func (a *SimpleApp) setupPlaylistComponent() {
 	a.playlistFooter.SetBackgroundColor(a.theme.Base)
 	a.updatePlaylistFooter()
 
-	// Adiciona o footer dentro do Flex da playlist
-	// O playlist.Flex já tem um container interno, vamos adicionar o footer nele
-	playlistContainer := a.playlist.GetItem(0) // Container de items
+	playlistContainer := a.playlist.GetItem(0)
 	a.playlist.Flex.Clear()
 	a.playlist.Flex.AddItem(playlistContainer, 0, 1, false)
 	a.playlist.Flex.AddItem(a.playlistFooter, 1, 0, false)
 }
 
-// setupDetailsComponent cria o painel de detalhes
 func (a *SimpleApp) setupDetailsComponent() {
 	a.detailsThumb = tview.NewImage().
 		SetColors(tview.TrueColor).
@@ -89,7 +80,6 @@ func (a *SimpleApp) setupDetailsComponent() {
 		SetBorderColor(a.theme.Surface0)
 }
 
-// setupPlayerComponents cria os componentes do player
 func (a *SimpleApp) setupPlayerComponents() {
 	a.thumbnailView = tview.NewImage().
 		SetColors(tview.TrueColor).
@@ -104,8 +94,6 @@ func (a *SimpleApp) setupPlayerComponents() {
 
 	a.playerInfo.SetBorder(false)
 
-	// PlayerBox focável para receber controles quando selecionado
-	// Agora com borda própria que muda quando selecionado
 	playerContent := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.thumbnailView, 20, 0, false).
 		AddItem(a.playerInfo, 0, 1, false)
@@ -118,7 +106,6 @@ func (a *SimpleApp) setupPlayerComponents() {
 		SetBorderColor(a.theme.Surface0)
 }
 
-// setupStatusBars cria as barras de status e comandos
 func (a *SimpleApp) setupStatusBars() {
 	a.statusBar = tview.NewTextView().
 		SetDynamicColors(true).
@@ -128,7 +115,6 @@ func (a *SimpleApp) setupStatusBars() {
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter)
 
-	// Badge de modo estilo Neovim (canto inferior direito)
 	a.modeBadge = tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignRight)
@@ -139,7 +125,6 @@ func (a *SimpleApp) setupStatusBars() {
 	a.updateCommandBar()
 }
 
-// setupHelpModal cria o modal de ajuda
 func (a *SimpleApp) setupHelpModal() {
 	a.helpModal = tview.NewModal().
 		SetText(a.getHelpText()).
@@ -149,7 +134,6 @@ func (a *SimpleApp) setupHelpModal() {
 		})
 }
 
-// setupConfigModal cria o modal de configuração
 func (a *SimpleApp) setupConfigModal() {
 	a.configModal = tview.NewModal().
 		SetText(a.getConfigText()).
@@ -161,31 +145,27 @@ func (a *SimpleApp) setupConfigModal() {
 		}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			switch buttonIndex {
-			case 0: // Idioma
+			case 0:
 				a.cycleLanguage()
-			case 1: // Tema (placeholder)
+			case 1:
 				a.statusBar.SetText("[yellow]⚠ " + a.strings.ThemeComingSoon)
-			case 2: // Ajuda
+			case 2:
 				a.app.SetRoot(a.helpModal, true)
-			case 3: // Fechar
+			case 3:
 				a.app.SetRoot(a.getMainLayout(), true)
 			}
 		})
 }
 
-// setupLayout configura o layout principal da aplicação
 func (a *SimpleApp) setupLayout() {
-	// Painel de busca com thumbnails inline na lista
 	searchPanel := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(a.searchInput, 3, 0, true).
 		AddItem(a.searchResults.Flex, 0, 1, true)
 
-	// playlist.Flex já contém o footer integrado
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
 		AddItem(a.playlist.Flex, 0, 1, true)
 
-	// Barra de status com badge de modo no canto direito
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.statusBar, 0, 1, false).
 		AddItem(a.modeBadge, 18, 0, false)
@@ -199,18 +179,15 @@ func (a *SimpleApp) setupLayout() {
 	a.app.SetRoot(mainLayout, true).SetFocus(a.searchInput)
 }
 
-// getMainLayout retorna o layout principal (usado para voltar do help)
 func (a *SimpleApp) getMainLayout() tview.Primitive {
 	searchPanel := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(a.searchInput, 3, 0, true).
 		AddItem(a.searchResults.Flex, 0, 1, true)
 
-	// playlist.Flex já contém o footer integrado
 	topFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(searchPanel, 0, 1, true).
 		AddItem(a.playlist.Flex, 0, 1, true)
 
-	// Barra de status com badge de modo no canto direito
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.statusBar, 0, 1, false).
 		AddItem(a.modeBadge, 18, 0, false)
@@ -222,31 +199,26 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 		AddItem(a.commandBar, 1, 0, false)
 }
 
-// setupInputHandlers configura os handlers de entrada globais
 func (a *SimpleApp) setupInputHandlers() {
 	a.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focused := a.app.GetFocus()
 
-		// Ctrl+Q para sair (UNIVERSAL)
 		if event.Key() == tcell.KeyCtrlQ {
 			a.cleanup()
 			a.app.Stop()
 			return nil
 		}
 
-		// Ctrl+C para Configurações (UNIVERSAL)
 		if event.Key() == tcell.KeyCtrlC {
 			a.app.SetRoot(a.configModal, true)
 			return nil
 		}
 
-		// Ajuda global
 		if event.Rune() == '?' && focused != a.searchInput {
 			a.app.SetRoot(a.helpModal, true)
 			return nil
 		}
 
-		// Se está no input de busca
 		if focused == a.searchInput {
 			if event.Key() == tcell.KeyTab {
 				a.app.SetFocus(a.searchResults.Flex)
@@ -256,7 +228,6 @@ func (a *SimpleApp) setupInputHandlers() {
 			return event
 		}
 
-		// Tab para navegar entre painéis (incluindo player)
 		switch event.Key() {
 		case tcell.KeyTab:
 			switch focused {
@@ -273,68 +244,28 @@ func (a *SimpleApp) setupInputHandlers() {
 			return nil
 		}
 
-		// Atalhos de teclado
 		return a.handleKeyPress(event, focused)
 	})
 }
 
-// getHelpText retorna o texto de ajuda
 func (a *SimpleApp) getHelpText() string {
-	return `ATALHOS DO YOUTUI
-
-NAVEGAÇÃO:
-  Tab       Alternar entre painéis (Busca → Resultados → Playlist → Player)
-  /         Focar na busca
-  ↑/↓       Navegar nas listas
-  ?         Mostrar esta ajuda
-
-BUSCA:
-  Digite    Texto para buscar
-  Enter     Executar busca
-
-RESULTADOS:
-  Enter     Tocar faixa diretamente (sem playlist)
-  a         Adicionar à playlist
-  [ ]       Navegar entre páginas (anterior/próxima)
-
-PLAYLIST (quando focada):
-  Enter     Tocar faixa da playlist
-  Space     Tocar playlist do início
-  d         Remover item
-  J         Mover item para baixo
-  K         Mover item para cima
-  r         Ciclar repetição (󰑗 → 󰑘 → 󰑖 → 󰑗)
-  h         Toggle shuffle ()
-
-PLAYER (quando focado):
-  Space     Pause/Play
-  s         Stop
-  n         Próxima música
-  p         Música anterior
-  
-CONTROLES GLOBAIS:
-  m         Alternar áudio/vídeo
-  Ctrl+Q    Sair da aplicação
-
-ÍCONES DA PLAYLIST:
-  󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório
-`
+	return a.strings.HelpTitle + "\n\n" +
+		a.strings.HelpNavigation + ":\n" + a.strings.HelpNavigationText + "\n\n" +
+		a.strings.HelpSearch + ":\n" + a.strings.HelpSearchText + "\n\n" +
+		a.strings.HelpResults + ":\n" + a.strings.HelpResultsText + "\n\n" +
+		a.strings.HelpPlaylist + ":\n" + a.strings.HelpPlaylistText + "\n\n" +
+		a.strings.HelpPlayer + ":\n" + a.strings.HelpPlayerText + "\n  \n" +
+		a.strings.HelpGlobal + ":\n" + a.strings.HelpGlobalText + "\n\n" +
+		a.strings.HelpIcons + ":\n" + a.strings.HelpIconsText
 }
 
-// getConfigText retorna o texto do modal de configuração
 func (a *SimpleApp) getConfigText() string {
-	return `⚙️  CONFIGURAÇÕES
-
-Escolha uma opção abaixo para configurar o YouTui.
-Use as setas ←/→ para navegar e Enter para selecionar.
-`
+	return a.strings.ConfigText
 }
 
-// cycleLanguage alterna entre os idiomas disponíveis
 func (a *SimpleApp) cycleLanguage() {
 	languages := GetAllLanguages()
-	
-	// Encontra o índice atual
+
 	currentIdx := 0
 	for i, lang := range languages {
 		if lang == a.language {
@@ -342,35 +273,29 @@ func (a *SimpleApp) cycleLanguage() {
 			break
 		}
 	}
-	
-	// Próximo idioma (circular)
+
 	nextIdx := (currentIdx + 1) % len(languages)
 	a.language = languages[nextIdx]
 	a.strings = GetStrings(a.language)
-	
-	// Atualiza interface
+
 	a.refreshUI()
-	
-	// Mostra mensagem
+
 	langName := GetLanguageName(a.language)
-	a.statusBar.SetText(fmt.Sprintf("[green]✓ " + a.strings.LanguageChanged, langName))
+	a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.LanguageChanged, langName))
 }
 
-// refreshUI atualiza todos os textos da interface com o novo idioma
 func (a *SimpleApp) refreshUI() {
-	// Atualiza títulos
 	a.searchInput.SetBorder(true).SetTitle(" " + a.strings.Search + " ")
 	a.searchResults.SetTitle(" " + a.strings.Results + " [0] ")
-	
+
 	count := len(a.playlistTracks)
 	a.playlist.SetTitle(fmt.Sprintf(" %s [%d] ", a.strings.Playlist, count))
-	
+
 	a.playerBox.SetTitle(" " + a.strings.Player + " ")
-	
-	// Atualiza modais
+
 	a.helpModal.SetText(a.getHelpText())
 	a.helpModal.ClearButtons().AddButtons([]string{a.strings.Close})
-	
+
 	a.configModal.SetText(a.getConfigText())
 	a.configModal.ClearButtons().AddButtons([]string{
 		a.strings.Language + ": " + GetLanguageName(a.language),
@@ -378,12 +303,11 @@ func (a *SimpleApp) refreshUI() {
 		a.strings.Help,
 		a.strings.Close,
 	})
-	
-	// Atualiza barra de comandos e footer
+
 	a.updateCommandBar()
 	a.updatePlaylistFooter()
 	a.updateModeBadge()
-	
-	// Re-renderiza modal de config para mostrar botão atualizado
+	a.updatePlayerInfo()
+
 	a.app.SetRoot(a.configModal, true)
 }

@@ -48,7 +48,7 @@ func NewCustomList(theme *Theme) *CustomList {
 	}
 
 	wrapper.SetBorder(true).
-		SetTitle(" Resultados [0] ").
+		SetTitle(" ").
 		SetBorderColor(theme.Surface0)
 
 	wrapper.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -277,7 +277,6 @@ func formatItemInfoPlain(track Track, index int) string {
 	icons := []string{"♪", "♫", "♬"}
 	icon := icons[index%len(icons)]
 
-	// Trunca título se muito longo
 	title := track.Title
 	if len(title) > 50 {
 		title = title[:47] + "..."

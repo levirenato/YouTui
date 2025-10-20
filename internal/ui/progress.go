@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// startProgressUpdater inicia o atualizador de progresso
 func (a *SimpleApp) startProgressUpdater() {
 	a.mu.Lock()
 	if a.stopProgress != nil {
@@ -44,7 +43,6 @@ func (a *SimpleApp) startProgressUpdater() {
 	}()
 }
 
-// updateProgress atualiza a posição e duração do player
 func (a *SimpleApp) updateProgress() {
 	if a.mpvSocket == "" {
 		return
@@ -71,7 +69,6 @@ func (a *SimpleApp) updateProgress() {
 	})
 }
 
-// updatePlayerInfo atualiza a informação exibida no player
 func (a *SimpleApp) updatePlayerInfo() {
 	_, _, width, _ := a.playerInfo.GetInnerRect()
 	if width <= 0 {
@@ -86,51 +83,40 @@ func (a *SimpleApp) updatePlayerInfo() {
 	playlistLen := len(a.playlistTracks)
 	position := a.position
 	duration := a.duration
-	
-	// Pega autor se disponível
+
 	var author string
 	if currentTrack >= 0 && currentTrack < len(a.playlistTracks) {
 		author = a.playlistTracks[currentTrack].Author
 	}
 	a.mu.Unlock()
 
-	// Pega strings traduzidas
 	a.mu.Lock()
 	str := a.strings
 	a.mu.Unlock()
-	
-	// Linha 1: Título • Autor + Posição [3/10]
+
 	var titleLine string
 	if isPlaying {
-		// Monta título com autor se disponível
-		if author != "" && author != "Desconhecido" {
+		if author != "" && author != str.Unknown {
 			titleLine = fmt.Sprintf("[white::b] %s [gray]•[-] [#a6adc8]%s[-]", nowPlaying, author)
 		} else {
 			titleLine = fmt.Sprintf("[white::b] %s[-:-:-]", nowPlaying)
 		}
-		
-		// Adiciona posição na playlist se tocando da playlist
+
 		if currentTrack >= 0 && playlistLen > 0 {
-			// Calcula padding para alinhar à direita
 			plainTitle := fmt.Sprintf(" %s", nowPlaying)
-			if author != "" && author != "Desconhecido" {
+			if author != "" && author != str.Unknown {
 				plainTitle += fmt.Sprintf(" • %s", author)
 			}
 			posText := fmt.Sprintf("[%d/%d]", currentTrack+1, playlistLen)
-			padding := width - len(plainTitle) - len(posText) - 2
-			if padding < 0 {
-				padding = 0
-			}
+			padding := max(width-len(plainTitle)-len(posText)-2, 0)
 			titleLine += strings.Repeat(" ", padding) + fmt.Sprintf("[#585b70]%s[-]", posText)
 		}
 	} else {
 		titleLine = "[gray]⏹ " + str.NoTrackPlaying + "[-]"
 	}
 
-	// Linha 2: Ícone + Barra + Tempo
 	var progressLine string
 	if isPlaying && duration > 0 {
-		// Ícone play/pause
 		icon := "▶"
 		iconColor := "green"
 		if isPaused {
@@ -138,7 +124,6 @@ func (a *SimpleApp) updatePlayerInfo() {
 			iconColor = "yellow"
 		}
 
-		// Calcula barra de progresso
 		percentage := position / duration
 		if percentage > 1 {
 			percentage = 1
@@ -147,10 +132,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 			percentage = 0
 		}
 
-		totalBars := width - 18 // Espaço para ícone + tempo
-		if totalBars < 20 {
-			totalBars = 20
-		}
+		totalBars := max(width-18, 20)
 		if totalBars > 100 {
 			totalBars = 100
 		}
@@ -183,7 +165,6 @@ func (a *SimpleApp) updatePlayerInfo() {
 	a.playerInfo.SetText(fmt.Sprintf("%s\n%s", titleLine, progressLine))
 }
 
-// updateModeBadge atualiza a badge de modo estilo Neovim
 func (a *SimpleApp) updateModeBadge() {
 	a.mu.Lock()
 	mode := a.playMode
@@ -192,17 +173,14 @@ func (a *SimpleApp) updateModeBadge() {
 
 	var badge string
 	if mode == ModeVideo {
-		// Badge azul para vídeo (estilo VISUAL do Neovim)
 		badge = "[gray]m[-] [black:blue:b]   " + strings.Video + " [-:-:-] "
 	} else {
-		// Badge verde para áudio (estilo INSERT do Neovim)
 		badge = "[gray]m[-] [black:green:b]   " + strings.Audio + " [-:-:-] "
 	}
 
 	a.modeBadge.SetText(badge)
 }
 
-// updatePlaylistFooter atualiza o footer da playlist com o ícone do modo
 func (a *SimpleApp) updatePlaylistFooter() {
 	a.mu.Lock()
 	mode := a.playlistMode

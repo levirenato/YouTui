@@ -110,7 +110,7 @@ type SimpleApp struct {
 
 func NewSimpleApp() *SimpleApp {
 	theme := CatppuccinMocha
-	lang := LanguagePT
+	lang := LanguageEN
 	thumbCache, _ := NewThumbnailCache()
 
 	app := &SimpleApp{
