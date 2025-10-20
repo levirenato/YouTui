@@ -55,23 +55,23 @@ type Track struct {
 	Description string
 }
 
-// SimpleApp é a aplicação principal do YouTui
 type SimpleApp struct {
-	app           *tview.Application
-	searchInput   *tview.InputField
-	searchResults *CustomList
-	playlist      *CustomList
-	detailsView   *tview.Flex
-	detailsThumb  *tview.Image
-	detailsText   *tview.TextView
-	thumbnailView *tview.Image
-	playerInfo    *tview.TextView
-	playerBox     *tview.Flex
+	app            *tview.Application
+	searchInput    *tview.InputField
+	searchResults  *CustomList
+	playlist       *CustomList
+	detailsView    *tview.Flex
+	detailsThumb   *tview.Image
+	detailsText    *tview.TextView
+	thumbnailView  *tview.Image
+	playerInfo     *tview.TextView
+	playerBox      *tview.Flex
 	playlistFooter *tview.TextView
-	statusBar     *tview.TextView
-	commandBar    *tview.TextView
-	modeBadge     *tview.TextView
-	helpModal     *tview.Modal
+	statusBar      *tview.TextView
+	commandBar     *tview.TextView
+	modeBadge      *tview.TextView
+	helpModal      *tview.Modal
+	configModal    *tview.Modal
 
 	tracks         []Track
 	playlistTracks []Track
@@ -101,30 +101,32 @@ type SimpleApp struct {
 	detailsCancelFunc    context.CancelFunc
 	detailsDebounceTimer *time.Timer
 
-	theme *Theme
+	theme    *Theme
+	language Language
+	strings  Strings
 
 	mu sync.Mutex
 }
 
-// NewSimpleApp cria uma nova instância da aplicação
 func NewSimpleApp() *SimpleApp {
 	theme := CatppuccinMocha
-
+	lang := LanguagePT
 	thumbCache, _ := NewThumbnailCache()
 
 	app := &SimpleApp{
 		app:            tview.NewApplication(),
 		tracks:         []Track{},
 		playlistTracks: []Track{},
-		pagination:     NewPagination(10), // 10 itens por página
+		pagination:     NewPagination(10),
 		playlistMode:   ModeNormal,
 		playMode:       ModeAudio,
 		currentTrack:   -1,
-		thumbCache:     thumbCache,
 		theme:          &theme,
+		language:       lang,
+		strings:        GetStrings(lang),
+		thumbCache:     thumbCache,
 	}
 
-	// Configura estilos globais do tview
 	tview.Styles.PrimitiveBackgroundColor = theme.Base
 	tview.Styles.ContrastBackgroundColor = theme.Surface0
 	tview.Styles.MoreContrastBackgroundColor = theme.Surface1
@@ -141,12 +143,10 @@ func NewSimpleApp() *SimpleApp {
 	return app
 }
 
-// Run inicia a aplicação
 func (a *SimpleApp) Run() error {
 	return a.app.Run()
 }
 
-// cleanup limpa recursos do mpv e atualiza estado
 func (a *SimpleApp) cleanup() {
 	a.mu.Lock()
 	if a.stopProgress != nil {

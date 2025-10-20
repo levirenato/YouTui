@@ -4,11 +4,10 @@ import (
 	"fmt"
 )
 
-// onPlaylistSelectedCustom é chamado quando Enter é pressionado na playlist
+// onPlaylistSelectedCustom is called when Enter is pressed on playlist
 func (a *SimpleApp) onPlaylistSelectedCustom(idx int) {
 	track := a.playlist.GetCurrentTrack()
 	if track != nil {
-		// Pega o índice real da playlist
 		a.mu.Lock()
 		realIdx := a.playlist.GetCurrentItem()
 		a.mu.Unlock()
@@ -16,7 +15,7 @@ func (a *SimpleApp) onPlaylistSelectedCustom(idx int) {
 	}
 }
 
-// addToPlaylist adiciona uma faixa à playlist
+// addToPlaylist adds a track to the playlist
 func (a *SimpleApp) addToPlaylist(track Track) {
 	a.mu.Lock()
 	a.playlistTracks = append(a.playlistTracks, track)
@@ -25,10 +24,9 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 	a.mu.Unlock()
 
 	a.app.QueueUpdateDraw(func() {
-		// Adiciona item com thumbnail inline
 		a.playlist.AddItem(track, index)
 		
-		// Carrega thumbnail em background (usa cache!)
+		// Load thumbnail in background (uses cache)
 		if track.Thumbnail != "" && a.thumbCache != nil {
 			go func(idx int, url string) {
 				img, err := a.thumbCache.GetThumbnailImage(url)
@@ -39,11 +37,11 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 		}
 		
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
-		a.statusBar.SetText(fmt.Sprintf("[green]✓ Adicionado: %s", track.Title))
+		a.statusBar.SetText(fmt.Sprintf("[green]✓ " + a.strings.AddedToPlaylist, track.Title))
 	})
 }
 
-// removeFromPlaylist remove uma faixa da playlist
+// removeFromPlaylist removes a track from the playlist
 func (a *SimpleApp) removeFromPlaylist(idx int) {
 	a.mu.Lock()
 	if idx < 0 || idx >= len(a.playlistTracks) {
@@ -83,17 +81,17 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 		}
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
 		
-		// Atualiza índice do item tocando após remoção
+		// Update playing index after removal
 		a.mu.Lock()
 		currentIdx := a.currentTrack
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 		
-		a.statusBar.SetText("[yellow]✓ Removido da playlist")
+		a.statusBar.SetText("[yellow]✓ " + a.strings.RemovedFromPlaylist)
 	})
 }
 
-// movePlaylistItem move um item na playlist
+// movePlaylistItem moves an item in the playlist
 func (a *SimpleApp) movePlaylistItem(from, to int) {
 	a.mu.Lock()
 	if from < 0 || from >= len(a.playlistTracks) {
@@ -140,17 +138,17 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 		}
 		a.playlist.SetCurrentIndex(newPos)
 		
-		// Atualiza índice do item tocando após mover
+		// Update playing index after moving
 		a.mu.Lock()
 		currentIdx := a.currentTrack
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 		
-		a.statusBar.SetText("[cyan]✓ Item movido")
+		a.statusBar.SetText("[cyan]✓ " + a.strings.ItemMoved)
 	})
 }
 
-// cycleRepeatMode alterna entre os modos de repetição
+// cycleRepeatMode cycles through repeat modes
 func (a *SimpleApp) cycleRepeatMode() {
 	switch a.playlistMode {
 	case ModeNormal:
@@ -164,11 +162,11 @@ func (a *SimpleApp) cycleRepeatMode() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updatePlaylistFooter()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playlistMode.String()))
+		a.statusBar.SetText(fmt.Sprintf("[cyan]  " + a.strings.ModeChanged, a.playlistMode.String()))
 	})
 }
 
-// toggleShuffle alterna o modo shuffle
+// toggleShuffle toggles shuffle mode
 func (a *SimpleApp) toggleShuffle() {
 	if a.playlistMode == ModeShuffle {
 		a.playlistMode = ModeNormal
@@ -179,6 +177,6 @@ func (a *SimpleApp) toggleShuffle() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updatePlaylistFooter()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playlistMode.String()))
+		a.statusBar.SetText(fmt.Sprintf("[cyan]  " + a.strings.ModeChanged, a.playlistMode.String()))
 	})
 }

@@ -94,14 +94,19 @@ func (a *SimpleApp) updatePlayerInfo() {
 	}
 	a.mu.Unlock()
 
+	// Pega strings traduzidas
+	a.mu.Lock()
+	str := a.strings
+	a.mu.Unlock()
+	
 	// Linha 1: Título • Autor + Posição [3/10]
 	var titleLine string
 	if isPlaying {
 		// Monta título com autor se disponível
 		if author != "" && author != "Desconhecido" {
-			titleLine = fmt.Sprintf("[white::b][-:-:-] %s [gray]•[-] [#a6adc8]%s[-]", nowPlaying, author)
+			titleLine = fmt.Sprintf("[white::b] %s [gray]•[-] [#a6adc8]%s[-]", nowPlaying, author)
 		} else {
-			titleLine = fmt.Sprintf("[white::b][-:-:-] %s[-:-:-]", nowPlaying)
+			titleLine = fmt.Sprintf("[white::b] %s[-:-:-]", nowPlaying)
 		}
 		
 		// Adiciona posição na playlist se tocando da playlist
@@ -119,7 +124,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 			titleLine += strings.Repeat(" ", padding) + fmt.Sprintf("[#585b70]%s[-]", posText)
 		}
 	} else {
-		titleLine = "[gray]⏹ Nenhuma faixa tocando[-]"
+		titleLine = "[gray]⏹ " + str.NoTrackPlaying + "[-]"
 	}
 
 	// Linha 2: Ícone + Barra + Tempo
@@ -182,15 +187,16 @@ func (a *SimpleApp) updatePlayerInfo() {
 func (a *SimpleApp) updateModeBadge() {
 	a.mu.Lock()
 	mode := a.playMode
+	strings := a.strings
 	a.mu.Unlock()
 
 	var badge string
 	if mode == ModeVideo {
 		// Badge azul para vídeo (estilo VISUAL do Neovim)
-		badge = "[gray]m[-] [black:blue:b]   VÍDEO [-:-:-] "
+		badge = "[gray]m[-] [black:blue:b]   " + strings.Video + " [-:-:-] "
 	} else {
 		// Badge verde para áudio (estilo INSERT do Neovim)
-		badge = "[gray]m[-] [black:green:b]   ÁUDIO [-:-:-] "
+		badge = "[gray]m[-] [black:green:b]   " + strings.Audio + " [-:-:-] "
 	}
 
 	a.modeBadge.SetText(badge)
@@ -200,18 +206,19 @@ func (a *SimpleApp) updateModeBadge() {
 func (a *SimpleApp) updatePlaylistFooter() {
 	a.mu.Lock()
 	mode := a.playlistMode
+	strings := a.strings
 	a.mu.Unlock()
 
 	var footer string
 	switch mode {
 	case ModeShuffle:
-		footer = "[#94e2d5]  Aleatório[-]"
+		footer = "[#94e2d5]  " + strings.Shuffle + "[-]"
 	case ModeRepeatOne:
-		footer = "[#fab387]󰑘 Repetir Uma[-]"
+		footer = "[#fab387]󰑘 " + strings.RepeatOne + "[-]"
 	case ModeRepeatAll:
-		footer = "[#a6e3a1]󰑖 Repetir Todas[-]"
+		footer = "[#a6e3a1]󰑖 " + strings.RepeatAll + "[-]"
 	default:
-		footer = "[#585b70]󰑗 Sem Repetição[-]"
+		footer = "[#585b70]󰑗 " + strings.NoRepeat + "[-]"
 	}
 
 	a.playlistFooter.SetText(footer)

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+	
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -13,6 +15,7 @@ func (a *SimpleApp) setupUI() {
 	a.setupPlayerComponents()
 	a.setupStatusBars()
 	a.setupHelpModal()
+	a.setupConfigModal()
 	a.setupLayout()
 	a.setupInputHandlers()
 }
@@ -140,9 +143,33 @@ func (a *SimpleApp) setupStatusBars() {
 func (a *SimpleApp) setupHelpModal() {
 	a.helpModal = tview.NewModal().
 		SetText(a.getHelpText()).
-		AddButtons([]string{"Fechar"}).
+		AddButtons([]string{a.strings.Close}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			a.app.SetRoot(a.getMainLayout(), true)
+		})
+}
+
+// setupConfigModal cria o modal de configuração
+func (a *SimpleApp) setupConfigModal() {
+	a.configModal = tview.NewModal().
+		SetText(a.getConfigText()).
+		AddButtons([]string{
+			a.strings.Language + ": " + GetLanguageName(a.language),
+			a.strings.Theme,
+			a.strings.Help,
+			a.strings.Close,
+		}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			switch buttonIndex {
+			case 0: // Idioma
+				a.cycleLanguage()
+			case 1: // Tema (placeholder)
+				a.statusBar.SetText("[yellow]⚠ " + a.strings.ThemeComingSoon)
+			case 2: // Ajuda
+				a.app.SetRoot(a.helpModal, true)
+			case 3: // Fechar
+				a.app.SetRoot(a.getMainLayout(), true)
+			}
 		})
 }
 
@@ -204,6 +231,12 @@ func (a *SimpleApp) setupInputHandlers() {
 		if event.Key() == tcell.KeyCtrlQ {
 			a.cleanup()
 			a.app.Stop()
+			return nil
+		}
+
+		// Ctrl+C para Configurações (UNIVERSAL)
+		if event.Key() == tcell.KeyCtrlC {
+			a.app.SetRoot(a.configModal, true)
 			return nil
 		}
 
@@ -286,4 +319,71 @@ CONTROLES GLOBAIS:
 ÍCONES DA PLAYLIST:
   󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório
 `
+}
+
+// getConfigText retorna o texto do modal de configuração
+func (a *SimpleApp) getConfigText() string {
+	return `⚙️  CONFIGURAÇÕES
+
+Escolha uma opção abaixo para configurar o YouTui.
+Use as setas ←/→ para navegar e Enter para selecionar.
+`
+}
+
+// cycleLanguage alterna entre os idiomas disponíveis
+func (a *SimpleApp) cycleLanguage() {
+	languages := GetAllLanguages()
+	
+	// Encontra o índice atual
+	currentIdx := 0
+	for i, lang := range languages {
+		if lang == a.language {
+			currentIdx = i
+			break
+		}
+	}
+	
+	// Próximo idioma (circular)
+	nextIdx := (currentIdx + 1) % len(languages)
+	a.language = languages[nextIdx]
+	a.strings = GetStrings(a.language)
+	
+	// Atualiza interface
+	a.refreshUI()
+	
+	// Mostra mensagem
+	langName := GetLanguageName(a.language)
+	a.statusBar.SetText(fmt.Sprintf("[green]✓ " + a.strings.LanguageChanged, langName))
+}
+
+// refreshUI atualiza todos os textos da interface com o novo idioma
+func (a *SimpleApp) refreshUI() {
+	// Atualiza títulos
+	a.searchInput.SetBorder(true).SetTitle(" " + a.strings.Search + " ")
+	a.searchResults.SetTitle(" " + a.strings.Results + " [0] ")
+	
+	count := len(a.playlistTracks)
+	a.playlist.SetTitle(fmt.Sprintf(" %s [%d] ", a.strings.Playlist, count))
+	
+	a.playerBox.SetTitle(" " + a.strings.Player + " ")
+	
+	// Atualiza modais
+	a.helpModal.SetText(a.getHelpText())
+	a.helpModal.ClearButtons().AddButtons([]string{a.strings.Close})
+	
+	a.configModal.SetText(a.getConfigText())
+	a.configModal.ClearButtons().AddButtons([]string{
+		a.strings.Language + ": " + GetLanguageName(a.language),
+		a.strings.Theme,
+		a.strings.Help,
+		a.strings.Close,
+	})
+	
+	// Atualiza barra de comandos e footer
+	a.updateCommandBar()
+	a.updatePlaylistFooter()
+	a.updateModeBadge()
+	
+	// Re-renderiza modal de config para mostrar botão atualizado
+	a.app.SetRoot(a.configModal, true)
 }

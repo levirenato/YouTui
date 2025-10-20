@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// playTrackSimple reproduz uma faixa da playlist
+// playTrackSimple plays a track from the playlist
 func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.mu.Lock()
 	if a.stopProgress != nil {
@@ -61,8 +61,8 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
-		a.playlist.SetPlayingIndex(idx) // Destaca o item tocando em verde
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ Tocando: %s", track.Title))
+		a.playlist.SetPlayingIndex(idx)
+		a.statusBar.SetText(fmt.Sprintf("[green]▶ " + a.strings.Playing + ": %s", track.Title))
 	})
 
 	a.startProgressUpdater()
@@ -73,9 +73,9 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 		time.Sleep(500 * time.Millisecond)
 
 		a.mu.Lock()
-		// Verifica se ainda é o processo atual antes de fazer auto-play
+		// Check if still the current process before auto-play
 		if a.mpvProcess != expectedCmd {
-			// Processo foi substituído, ignora este callback
+			// Process was replaced, ignore this callback
 			a.mu.Unlock()
 			return
 		}
@@ -98,13 +98,13 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 			nextIdx = idx
 
 		case ModeShuffle:
-			// Modo shuffle: toca música aleatória (diferente da atual)
+			// Shuffle mode: play random song (different from current)
 			if len(a.playlistTracks) > 0 {
 				if len(a.playlistTracks) == 1 {
-					// Se só tem 1 música, repete ela
+					// If only 1 song, repeat it
 					nextIdx = 0
 				} else {
-					// Escolhe uma música diferente da atual
+					// Check if should auto-skip to next
 					for {
 						nextIdx = rand.IntN(len(a.playlistTracks))
 						if nextIdx != idx {
@@ -146,13 +146,13 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 			a.app.QueueUpdateDraw(func() {
 				a.updatePlayerInfo()
-				a.statusBar.SetText("[yellow]Playlist finalizada")
+				a.statusBar.SetText("[yellow]" + a.strings.PlaylistFinished)
 			})
 		}
 	}(cmd)
 }
 
-// playTrackDirect reproduz uma faixa diretamente (sem playlist)
+// playTrackDirect plays a track directly from results (without playlist)
 func (a *SimpleApp) playTrackDirect(track Track) {
 	a.cleanup()
 
@@ -197,8 +197,8 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
-		a.playlist.SetPlayingIndex(-1) // Limpa destaque (não está tocando da playlist)
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ Tocando: %s (sem playlist)", track.Title))
+		a.playlist.SetPlayingIndex(-1)
+		a.statusBar.SetText(fmt.Sprintf("[green]▶ " + a.strings.PlayingWithoutPlaylist, track.Title))
 	})
 
 	a.startProgressUpdater()
@@ -206,10 +206,10 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	go func(expectedCmd *exec.Cmd) {
 		expectedCmd.Wait()
 
-		// Verifica se ainda é o processo atual antes de atualizar estado
+		// Check if still the current process before updating state
 		a.mu.Lock()
 		if a.mpvProcess != expectedCmd {
-			// Processo foi substituído, ignora este callback
+			// Process was replaced, ignore this callback
 			a.mu.Unlock()
 			return
 		}
@@ -218,12 +218,12 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 		a.app.QueueUpdateDraw(func() {
 			a.updatePlayerInfo()
-			a.statusBar.SetText("[yellow]Reprodução finalizada")
+			a.statusBar.SetText("[yellow]" + a.strings.PlaybackFinished)
 		})
 	}(cmd)
 }
 
-// togglePause alterna entre pausar e retomar
+// togglePause toggles pause/play
 func (a *SimpleApp) togglePause() {
 	a.mu.Lock()
 	isPlaying := a.isPlaying
@@ -232,7 +232,7 @@ func (a *SimpleApp) togglePause() {
 
 	if !isPlaying || socket == "" {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]⚠ Estado: isPlaying=%v socket=%s", isPlaying, socket))
+			a.statusBar.SetText(fmt.Sprintf("[red]⚠ " + a.strings.StateError, isPlaying, socket))
 		})
 		return
 	}
@@ -241,7 +241,7 @@ func (a *SimpleApp) togglePause() {
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ Erro: %v | %s", err, string(output)))
+			a.statusBar.SetText(fmt.Sprintf("[red]❌ " + a.strings.Error, err, string(output)))
 		})
 		return
 	}
@@ -254,14 +254,14 @@ func (a *SimpleApp) togglePause() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		if isPaused {
-			a.statusBar.SetText("[yellow]⏸ Pausado")
+			a.statusBar.SetText("[yellow]⏸ " + a.strings.Paused)
 		} else {
-			a.statusBar.SetText("[green]▶ Tocando")
+			a.statusBar.SetText("[green]▶ " + a.strings.Playing)
 		}
 	})
 }
 
-// stopPlayback para a reprodução completamente
+// stopPlayback stops playback completely
 func (a *SimpleApp) stopPlayback() {
 	a.mu.Lock()
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
@@ -276,12 +276,12 @@ func (a *SimpleApp) stopPlayback() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail("")
-		a.playlist.SetPlayingIndex(-1) // Limpa destaque ao parar
-		a.statusBar.SetText("[red]⏹ Parado")
+		a.playlist.SetPlayingIndex(-1)
+		a.statusBar.SetText("[red]⏹ " + a.strings.Stopped)
 	})
 }
 
-// playNext pula para a próxima faixa
+// playNext skips to the next track
 func (a *SimpleApp) playNext() {
 	a.mu.Lock()
 	currentIsPlaying := a.isPlaying
@@ -291,7 +291,7 @@ func (a *SimpleApp) playNext() {
 	if playlistLen == 0 {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ Playlist vazia")
+			a.statusBar.SetText("[yellow]⚠ " + a.strings.PlaylistEmpty)
 		})
 		return
 	}
@@ -299,18 +299,18 @@ func (a *SimpleApp) playNext() {
 	if !currentIsPlaying {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[yellow]⚠ isPlaying=%v - Inicie a playlist primeiro.", currentIsPlaying))
+			a.statusBar.SetText("[yellow]⚠ " + a.strings.NothingPlaying)
 		})
 		return
 	}
 
-	// Se está tocando em modo direto (currentTrack < 0), começa do início da playlist
+	// If playing in direct mode (currentTrack < 0), start from beginning of playlist
 	if currentTrack < 0 {
 		track := a.playlistTracks[0]
 		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[cyan]▶ Entrando na playlist...")
+			a.statusBar.SetText("[cyan]▶ " + a.strings.EnteringPlaylist)
 		})
 		go a.playTrackSimple(track, 0)
 		return
@@ -319,9 +319,9 @@ func (a *SimpleApp) playNext() {
 	var next int
 
 	if a.playlistMode == ModeShuffle {
-		// Shuffle: escolhe música diferente da atual
+		// Shuffle: choose different song from current
 		if playlistLen == 1 {
-			next = 0 // Só tem 1 música
+			next = 0 // Only 1 song
 		} else {
 			for {
 				next = rand.IntN(playlistLen)
@@ -338,7 +338,7 @@ func (a *SimpleApp) playNext() {
 			} else {
 				a.mu.Unlock()
 				a.app.QueueUpdateDraw(func() {
-					a.statusBar.SetText("[yellow]Já está na última música")
+					a.statusBar.SetText("[yellow]" + a.strings.AlreadyLastSong)
 				})
 				return
 			}
@@ -350,13 +350,13 @@ func (a *SimpleApp) playNext() {
 	a.mu.Unlock()
 
 	a.app.QueueUpdateDraw(func() {
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ Pulando para: %d/%d - %s", next+1, playlistLen, track.Title))
+		a.statusBar.SetText(fmt.Sprintf("[green]▶ " + a.strings.SkippingTo, next+1, playlistLen, track.Title))
 	})
 
 	go a.playTrackSimple(track, next)
 }
 
-// playPrevious volta para a faixa anterior
+// playPrevious goes to previous track
 func (a *SimpleApp) playPrevious() {
 	a.mu.Lock()
 	playlistLen := len(a.playlistTracks)
@@ -364,7 +364,7 @@ func (a *SimpleApp) playPrevious() {
 	if playlistLen == 0 {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ Playlist vazia")
+			a.statusBar.SetText("[yellow]⚠ " + a.strings.PlaylistEmpty)
 		})
 		return
 	}
@@ -372,19 +372,19 @@ func (a *SimpleApp) playPrevious() {
 	if !a.isPlaying {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ Nada tocando. Inicie a playlist primeiro.")
+			a.statusBar.SetText("[yellow]⚠ " + a.strings.NothingPlaying)
 		})
 		return
 	}
 
-	// Se está tocando em modo direto (currentTrack < 0), começa do final da playlist
+	// If playing in direct mode (currentTrack < 0), start from end of playlist
 	if a.currentTrack < 0 {
 		lastIdx := playlistLen - 1
 		track := a.playlistTracks[lastIdx]
 		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[cyan]▶ Entrando na playlist...")
+			a.statusBar.SetText("[cyan]▶ " + a.strings.EnteringPlaylist)
 		})
 		go a.playTrackSimple(track, lastIdx)
 		return
@@ -397,7 +397,7 @@ func (a *SimpleApp) playPrevious() {
 		} else {
 			a.mu.Unlock()
 			a.app.QueueUpdateDraw(func() {
-				a.statusBar.SetText("[yellow]Já está na primeira música")
+				a.statusBar.SetText("[yellow]" + a.strings.AlreadyFirstSong)
 			})
 			return
 		}
@@ -409,7 +409,7 @@ func (a *SimpleApp) playPrevious() {
 	go a.playTrackSimple(track, prev)
 }
 
-// toggleMode alterna entre modo áudio e vídeo
+// toggleMode toggles between audio and video mode
 func (a *SimpleApp) toggleMode() {
 	if a.playMode == ModeAudio {
 		a.playMode = ModeVideo
@@ -420,6 +420,6 @@ func (a *SimpleApp) toggleMode() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateModeBadge()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  Modo: %s", a.playMode.String()))
+		a.statusBar.SetText(fmt.Sprintf("[cyan]  " + a.strings.ModeChanged, a.playMode.String()))
 	})
 }
