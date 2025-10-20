@@ -47,7 +47,7 @@ func (a *SimpleApp) setupPlaylistComponent() {
 	a.playlist.SetSelectedFunc(func(idx int) {
 		a.onPlaylistSelectedCustom(idx)
 	})
-	
+
 	// Footer com indicador de modo da playlist (dentro da box)
 	a.playlistFooter = tview.NewTextView().
 		SetDynamicColors(true).
@@ -55,7 +55,7 @@ func (a *SimpleApp) setupPlaylistComponent() {
 		SetTextColor(a.theme.Subtext0)
 	a.playlistFooter.SetBackgroundColor(a.theme.Base)
 	a.updatePlaylistFooter()
-	
+
 	// Adiciona o footer dentro do Flex da playlist
 	// O playlist.Flex já tem um container interno, vamos adicionar o footer nele
 	playlistContainer := a.playlist.GetItem(0) // Container de items
@@ -100,16 +100,16 @@ func (a *SimpleApp) setupPlayerComponents() {
 		SetTextColor(a.theme.Text)
 
 	a.playerInfo.SetBorder(false)
-	
+
 	// PlayerBox focável para receber controles quando selecionado
 	// Agora com borda própria que muda quando selecionado
 	playerContent := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.thumbnailView, 20, 0, false).
 		AddItem(a.playerInfo, 0, 1, false)
-	
+
 	a.playerBox = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(playerContent, 0, 1, false)
-	
+
 	a.playerBox.SetBorder(true).
 		SetTitle(" Player ").
 		SetBorderColor(a.theme.Surface0)

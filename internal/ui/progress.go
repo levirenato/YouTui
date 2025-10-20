@@ -78,20 +78,63 @@ func (a *SimpleApp) updatePlayerInfo() {
 		width = 80
 	}
 
-	var status string
-	if a.isPlaying {
-		icon := "▶"
-		if a.isPaused {
-			icon = "⏸"
+	a.mu.Lock()
+	isPlaying := a.isPlaying
+	isPaused := a.isPaused
+	nowPlaying := a.nowPlaying
+	currentTrack := a.currentTrack
+	playlistLen := len(a.playlistTracks)
+	position := a.position
+	duration := a.duration
+	
+	// Pega autor se disponível
+	var author string
+	if currentTrack >= 0 && currentTrack < len(a.playlistTracks) {
+		author = a.playlistTracks[currentTrack].Author
+	}
+	a.mu.Unlock()
+
+	// Linha 1: Título • Autor + Posição [3/10]
+	var titleLine string
+	if isPlaying {
+		// Monta título com autor se disponível
+		if author != "" && author != "Desconhecido" {
+			titleLine = fmt.Sprintf("[white::b][-:-:-] %s [gray]•[-] [#a6adc8]%s[-]", nowPlaying, author)
+		} else {
+			titleLine = fmt.Sprintf("[white::b][-:-:-] %s[-:-:-]", nowPlaying)
 		}
-		status = fmt.Sprintf("[green::b]%s[-:-:-] [white]%s[-]", icon, a.nowPlaying)
+		
+		// Adiciona posição na playlist se tocando da playlist
+		if currentTrack >= 0 && playlistLen > 0 {
+			// Calcula padding para alinhar à direita
+			plainTitle := fmt.Sprintf(" %s", nowPlaying)
+			if author != "" && author != "Desconhecido" {
+				plainTitle += fmt.Sprintf(" • %s", author)
+			}
+			posText := fmt.Sprintf("[%d/%d]", currentTrack+1, playlistLen)
+			padding := width - len(plainTitle) - len(posText) - 2
+			if padding < 0 {
+				padding = 0
+			}
+			titleLine += strings.Repeat(" ", padding) + fmt.Sprintf("[#585b70]%s[-]", posText)
+		}
 	} else {
-		status = "[gray]⏹ Nenhuma faixa tocando[-]"
+		titleLine = "[gray]⏹ Nenhuma faixa tocando[-]"
 	}
 
-	var progress string
-	if a.isPlaying && a.duration > 0 {
-		percentage := a.position / a.duration
+	// Linha 2: Ícone + Barra + Tempo
+	var progressLine string
+	if isPlaying && duration > 0 {
+		// Ícone play/pause
+		icon := "▶"
+		iconColor := "green"
+		if isPaused {
+			icon = "⏸"
+			iconColor = "yellow"
+		}
+
+		// Calcula barra de progresso
+		percentage := position / duration
 		if percentage > 1 {
 			percentage = 1
 		}
@@ -99,7 +142,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 			percentage = 0
 		}
 
-		totalBars := width - 20
+		totalBars := width - 18 // Espaço para ícone + tempo
 		if totalBars < 20 {
 			totalBars = 20
 		}
@@ -110,30 +153,29 @@ func (a *SimpleApp) updatePlayerInfo() {
 		filledBars := int(percentage * float64(totalBars))
 		emptyBars := totalBars - filledBars
 
-		posMin := int(a.position / 60)
-		posSec := int(a.position) % 60
-		durMin := int(a.duration / 60)
-		durSec := int(a.duration) % 60
+		posMin := int(position / 60)
+		posSec := int(position) % 60
+		durMin := int(duration / 60)
+		durSec := int(duration) % 60
 
-		progress = fmt.Sprintf("[blue]%s[gray]%s[-] [cyan]%02d:%02d[-]/[white]%02d:%02d[-]",
+		progressLine = fmt.Sprintf("[%s]%s[-] [blue]%s[gray]%s[-]  [cyan]%02d:%02d[-] [#585b70]/[-] [white]%02d:%02d[-]",
+			iconColor, icon,
 			strings.Repeat("█", filledBars),
 			strings.Repeat("░", emptyBars),
 			posMin, posSec,
 			durMin, durSec)
 	} else {
-		totalBars := width - 20
+		totalBars := width - 18
 		if totalBars < 20 {
 			totalBars = 20
 		}
 		if totalBars > 100 {
 			totalBars = 100
 		}
-		progress = "[gray]" + strings.Repeat("░", totalBars) + " --:--/--:--[-]"
+		progressLine = fmt.Sprintf("[gray]⏹ %s  --:-- / --:--[-]", strings.Repeat("░", totalBars))
 	}
 
-	modeInfo := fmt.Sprintf("[cyan]%s[-] [yellow]|[-] [magenta]%s[-]", a.playMode.String(), a.playlistMode.String())
-
-	a.playerInfo.SetText(fmt.Sprintf("%s\n%s\n%s", status, progress, modeInfo))
+	a.playerInfo.SetText(fmt.Sprintf("%s\n%s", titleLine, progressLine))
 }
 
 // updateModeBadge atualiza a badge de modo estilo Neovim

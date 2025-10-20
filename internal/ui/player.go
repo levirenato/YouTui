@@ -61,6 +61,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
+		a.playlist.SetPlayingIndex(idx) // Destaca o item tocando em verde
 		a.statusBar.SetText(fmt.Sprintf("[green]▶ Tocando: %s", track.Title))
 	})
 
@@ -196,6 +197,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
+		a.playlist.SetPlayingIndex(-1) // Limpa destaque (não está tocando da playlist)
 		a.statusBar.SetText(fmt.Sprintf("[green]▶ Tocando: %s (sem playlist)", track.Title))
 	})
 
@@ -261,10 +263,20 @@ func (a *SimpleApp) togglePause() {
 
 // stopPlayback para a reprodução completamente
 func (a *SimpleApp) stopPlayback() {
-	a.cleanup()
+	a.mu.Lock()
+	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
+		a.mpvProcess.Process.Kill()
+		a.mpvProcess = nil
+	}
+	a.isPlaying = false
+	a.isPaused = false
+	a.currentTrack = -1
+	a.mu.Unlock()
+
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateThumbnail("")
+		a.playlist.SetPlayingIndex(-1) // Limpa destaque ao parar
 		a.statusBar.SetText("[red]⏹ Parado")
 	})
 }

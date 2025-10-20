@@ -82,6 +82,13 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 			}
 		}
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
+		
+		// Atualiza índice do item tocando após remoção
+		a.mu.Lock()
+		currentIdx := a.currentTrack
+		a.mu.Unlock()
+		a.playlist.SetPlayingIndex(currentIdx)
+		
 		a.statusBar.SetText("[yellow]✓ Removido da playlist")
 	})
 }
@@ -132,6 +139,13 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 			}
 		}
 		a.playlist.SetCurrentIndex(newPos)
+		
+		// Atualiza índice do item tocando após mover
+		a.mu.Lock()
+		currentIdx := a.currentTrack
+		a.mu.Unlock()
+		a.playlist.SetPlayingIndex(currentIdx)
+		
 		a.statusBar.SetText("[cyan]✓ Item movido")
 	})
 }

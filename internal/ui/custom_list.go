@@ -23,6 +23,7 @@ type CustomList struct {
 	container     *tview.Flex
 	items         []*CustomListItem
 	selectedIndex int
+	playingIndex  int // Índice do item atualmente tocando (-1 se nenhum)
 	theme         *Theme
 	mu            sync.Mutex
 	onSelected    func(index int)
@@ -44,6 +45,7 @@ func NewCustomList(theme *Theme) *CustomList {
 		container:     container,
 		items:         []*CustomListItem{},
 		selectedIndex: 0,
+		playingIndex:  -1, // -1 = nenhum item tocando
 		theme:         theme,
 		visibleStart:  0,
 		visibleHeight: 10, // Altura padrão em items (não linhas)
@@ -254,15 +256,26 @@ func (c *CustomList) SetSelectedFunc(handler func(int)) {
 func (c *CustomList) updateSelection() {
 	for i, item := range c.items {
 		if i == c.selectedIndex {
-			// Item selecionado - fundo azul
+			// Item selecionado - fundo azul + TEXTO PRETO para contraste
 			item.flex.SetBackgroundColor(c.theme.Blue)
-			item.info.SetTextColor(c.theme.Base)
+			item.info.SetTextColor(c.theme.Crust)
 			item.info.SetBackgroundColor(c.theme.Blue)
+			// Atualiza texto sem cores inline (texto preto puro)
+			item.info.SetText(formatItemInfoPlain(item.track, item.index))
+		} else if i == c.playingIndex {
+			// Item tocando - fundo verde + TEXTO PRETO para contraste
+			item.flex.SetBackgroundColor(c.theme.Green)
+			item.info.SetTextColor(c.theme.Crust)
+			item.info.SetBackgroundColor(c.theme.Green)
+			// Atualiza texto sem cores inline (texto preto puro)
+			item.info.SetText(formatItemInfoPlain(item.track, item.index))
 		} else {
-			// Item normal - fundo padrão
+			// Item normal - fundo padrão com texto colorido
 			item.flex.SetBackgroundColor(c.theme.Base)
 			item.info.SetTextColor(c.theme.Text)
 			item.info.SetBackgroundColor(c.theme.Base)
+			// Atualiza texto COM cores inline (amarelo, verde, ciano)
+			item.info.SetText(formatItemInfo(item.track, item.index))
 		}
 	}
 }
@@ -279,7 +292,16 @@ func (c *CustomList) SetBorderColor(color tcell.Color) *CustomList {
 	return c
 }
 
-// formatItemInfo formata as informações do item
+// SetPlayingIndex define qual item está atualmente tocando
+func (c *CustomList) SetPlayingIndex(idx int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	
+	c.playingIndex = idx
+	c.updateSelection()
+}
+
+// formatItemInfo formata as informações do item com cores
 func formatItemInfo(track Track, index int) string {
 	icons := []string{"♪", "♫", "♬"}
 	icon := icons[index%len(icons)]
@@ -292,4 +314,20 @@ func formatItemInfo(track Track, index int) string {
 	
 	return icon + " [yellow::b]" + title + "[-:-:-]\n" +
 		"[green]⏱ " + track.Duration + "[-] [cyan]• " + track.Author + "[-]"
+}
+
+// formatItemInfoPlain formata as informações sem cores inline (para itens selecionados/tocando)
+func formatItemInfoPlain(track Track, index int) string {
+	icons := []string{"♪", "♫", "♬"}
+	icon := icons[index%len(icons)]
+	
+	// Trunca título se muito longo
+	title := track.Title
+	if len(title) > 50 {
+		title = title[:47] + "..."
+	}
+	
+	// SEM markup de cores - texto puro que herda a cor do SetTextColor
+	return icon + " " + title + "\n" +
+		"⏱ " + track.Duration + " • " + track.Author
 }
