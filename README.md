@@ -9,6 +9,7 @@ A modern YouTube player for the terminal with TUI interface.
 
 YouTui is a YouTube player that runs entirely in the terminal, allowing you to search, play music/videos, and manage playlists without leaving the command line. Beautiful interface with inline thumbnails, complete controls, and 4 Catppuccin themes (light + dark).
 
+
 **Key features:**
 
 - Fast YouTube search (no API keys required)
@@ -19,6 +20,11 @@ YouTui is a YouTube player that runs entirely in the terminal, allowing you to s
 - 4 Catppuccin themes (🌻 Latte, 🪴 Frappé, 🌺 Macchiato, 🌿 Mocha)
 - Custom theme support
 - Multilingual (PT-BR and EN)
+
+## Screenshots
+<img width="1917" height="1045" alt="image" src="https://github.com/user-attachments/assets/94df9e10-d1d5-4065-b668-0ae003def764" />
+<img width="1903" height="1036" alt="image" src="https://github.com/user-attachments/assets/e4c9957a-c14b-4c68-9bf1-7a00e3579900" />
+
 
 ## Dependencies
 
