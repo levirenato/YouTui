@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/levirenato/YouTui/internal/config"
 	"github.com/rivo/tview"
 )
 
@@ -109,7 +110,20 @@ type SimpleApp struct {
 }
 
 func NewSimpleApp() *SimpleApp {
-	theme := CatppuccinMocha
+	cfg, _ := config.LoadConfig()
+	
+	var theme *Theme
+	if cfg.Theme.Active == "custom" && cfg.Theme.CustomPath != "" {
+		customTheme, err := LoadCustomTheme(cfg.Theme.CustomPath)
+		if err == nil {
+			theme = customTheme
+		} else {
+			theme = GetThemeByID("catppuccin-mocha")
+		}
+	} else {
+		theme = GetThemeByID(cfg.Theme.Active)
+	}
+	
 	lang := LanguageEN
 	thumbCache, _ := NewThumbnailCache()
 
@@ -121,7 +135,7 @@ func NewSimpleApp() *SimpleApp {
 		playlistMode:   ModeNormal,
 		playMode:       ModeAudio,
 		currentTrack:   -1,
-		theme:          &theme,
+		theme:          theme,
 		language:       lang,
 		strings:        GetStrings(lang),
 		thumbCache:     thumbCache,

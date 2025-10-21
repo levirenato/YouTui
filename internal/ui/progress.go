@@ -173,9 +173,9 @@ func (a *SimpleApp) updateModeBadge() {
 
 	var badge string
 	if mode == ModeVideo {
-		badge = "[gray]m[-] [black:blue:b]   " + strings.Video + " [-:-:-] "
+		badge = "[gray]m[-] [black:blue:b]   " + strings.Video + " [-:-:-] "
 	} else {
-		badge = "[gray]m[-] [black:green:b]   " + strings.Audio + " [-:-:-] "
+		badge = "[gray]m[-] [black:green:b]   " + strings.Audio + " [-:-:-] "
 	}
 
 	a.modeBadge.SetText(badge)

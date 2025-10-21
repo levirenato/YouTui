@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/levirenato/YouTui/internal/config"
 	"github.com/rivo/tview"
 )
 
@@ -139,7 +140,7 @@ func (a *SimpleApp) setupConfigModal() {
 		SetText(a.getConfigText()).
 		AddButtons([]string{
 			a.strings.Language + ": " + GetLanguageName(a.language),
-			a.strings.Theme,
+			a.strings.Theme + ": " + a.theme.Name,
 			a.strings.Help,
 			a.strings.Close,
 		}).
@@ -148,7 +149,7 @@ func (a *SimpleApp) setupConfigModal() {
 			case 0:
 				a.cycleLanguage()
 			case 1:
-				a.statusBar.SetText("[yellow]⚠ " + a.strings.ThemeComingSoon)
+				a.cycleTheme()
 			case 2:
 				a.app.SetRoot(a.helpModal, true)
 			case 3:
@@ -284,6 +285,75 @@ func (a *SimpleApp) cycleLanguage() {
 	a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.LanguageChanged, langName))
 }
 
+func (a *SimpleApp) cycleTheme() {
+	themes := GetAllThemes()
+
+	currentIdx := 0
+	for i, theme := range themes {
+		if theme.ID == a.theme.ID {
+			currentIdx = i
+			break
+		}
+	}
+
+	nextIdx := (currentIdx + 1) % len(themes)
+	newTheme := themes[nextIdx]
+	a.theme = &newTheme
+
+	cfg, _ := config.LoadConfig()
+	cfg.Theme.Active = a.theme.ID
+	cfg.Theme.CustomPath = ""
+	config.SaveConfig(cfg)
+
+	a.applyTheme()
+	a.refreshUI()
+
+	a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.ThemeChanged, a.theme.Name))
+}
+
+func (a *SimpleApp) applyTheme() {
+	tview.Styles.PrimitiveBackgroundColor = a.theme.Base
+	tview.Styles.ContrastBackgroundColor = a.theme.Surface0
+	tview.Styles.MoreContrastBackgroundColor = a.theme.Surface1
+	tview.Styles.BorderColor = a.theme.Surface0
+	tview.Styles.TitleColor = a.theme.Text
+	tview.Styles.GraphicsColor = a.theme.Blue
+	tview.Styles.PrimaryTextColor = a.theme.Text
+	tview.Styles.SecondaryTextColor = a.theme.Subtext1
+	tview.Styles.TertiaryTextColor = a.theme.Subtext0
+	tview.Styles.InverseTextColor = a.theme.Base
+	tview.Styles.ContrastSecondaryTextColor = a.theme.Subtext0
+
+	a.searchInput.SetFieldBackgroundColor(a.theme.Surface0).
+		SetFieldTextColor(a.theme.Text).
+		SetBorderColor(a.theme.Blue)
+
+	a.searchResults.SetTheme(a.theme)
+	a.playlist.SetTheme(a.theme)
+	
+	a.playerBox.SetBorderColor(a.theme.Surface0)
+
+	a.statusBar.SetBackgroundColor(a.theme.Base)
+	a.statusBar.SetTextColor(a.theme.Text)
+	
+	a.commandBar.SetBackgroundColor(a.theme.Base)
+	a.commandBar.SetTextColor(a.theme.Subtext1)
+	
+	a.modeBadge.SetBackgroundColor(a.theme.Base)
+	a.modeBadge.SetTextColor(a.theme.Mauve)
+	
+	a.playlistFooter.SetBackgroundColor(a.theme.Base)
+	a.playlistFooter.SetTextColor(a.theme.Subtext0)
+
+	a.playerInfo.SetBackgroundColor(a.theme.Base)
+	a.playerInfo.SetTextColor(a.theme.Text)
+
+	a.detailsText.SetBackgroundColor(a.theme.Base)
+	a.detailsText.SetTextColor(a.theme.Text)
+
+	a.updateCommandBar()
+}
+
 func (a *SimpleApp) refreshUI() {
 	a.searchInput.SetBorder(true).SetTitle(" " + a.strings.Search + " ")
 	a.searchResults.SetTitle(" " + a.strings.Results + " [0] ")
@@ -299,7 +369,7 @@ func (a *SimpleApp) refreshUI() {
 	a.configModal.SetText(a.getConfigText())
 	a.configModal.ClearButtons().AddButtons([]string{
 		a.strings.Language + ": " + GetLanguageName(a.language),
-		a.strings.Theme,
+		a.strings.Theme + ": " + a.theme.Name,
 		a.strings.Help,
 		a.strings.Close,
 	})

@@ -31,10 +31,13 @@ type CustomList struct {
 
 func NewCustomList(theme *Theme) *CustomList {
 	container := tview.NewFlex().SetDirection(tview.FlexRow)
+	container.SetBackgroundColor(theme.Base)
 
 	wrapper := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(container, 0, 1, false)
+	
+	wrapper.SetBackgroundColor(theme.Base)
 
 	list := &CustomList{
 		Flex:          wrapper,
@@ -71,6 +74,8 @@ func NewCustomList(theme *Theme) *CustomList {
 		return event
 	})
 
+	list.renderVisibleItems()
+
 	return list
 }
 
@@ -86,11 +91,16 @@ func (c *CustomList) AddItem(track Track, index int) {
 		SetDynamicColors(true).
 		SetText(formatItemInfo(track, index)).
 		SetTextAlign(tview.AlignLeft)
+	
+	info.SetBackgroundColor(c.theme.Base)
+	info.SetTextColor(c.theme.Text)
 
 	itemFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(thumb, 20, 0, false).
 		AddItem(info, 0, 1, false)
+	
+	itemFlex.SetBackgroundColor(c.theme.Base)
 
 	item := &CustomListItem{
 		flex:      itemFlex,
@@ -144,8 +154,16 @@ func (c *CustomList) renderVisibleItems() {
 		end = len(c.items)
 	}
 
-	for i := c.visibleStart; i < end; i++ {
-		c.container.AddItem(c.items[i].flex, 3, 0, false)
+	if len(c.items) == 0 {
+		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
+		c.container.AddItem(spacer, 0, 1, false)
+	} else {
+		for i := c.visibleStart; i < end; i++ {
+			c.container.AddItem(c.items[i].flex, 3, 0, false)
+		}
+
+		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
+		c.container.AddItem(spacer, 0, 1, false)
 	}
 
 	c.updateSelection()
@@ -284,4 +302,22 @@ func formatItemInfoPlain(track Track, index int) string {
 
 	return icon + " " + title + "\n" +
 		"⏱ " + track.Duration + " • " + track.Author
+}
+
+func (c *CustomList) SetTheme(theme *Theme) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	
+	c.theme = theme
+	c.SetBorderColor(theme.Surface0)
+	c.SetBackgroundColor(theme.Base)
+	c.container.SetBackgroundColor(theme.Base)
+	
+	for _, item := range c.items {
+		item.flex.SetBackgroundColor(theme.Base)
+		item.info.SetBackgroundColor(theme.Base)
+		item.info.SetTextColor(theme.Text)
+	}
+	
+	c.renderVisibleItems()
 }

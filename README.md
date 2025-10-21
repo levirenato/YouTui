@@ -1,84 +1,106 @@
 # YouTui 🎵
 
-Player de YouTube para terminal com interface TUI moderna.
+A modern YouTube player for the terminal with TUI interface.
 
 ![Go Version](https://img.shields.io/badge/go-1.24+-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-## O que faz?
+## What does it do?
 
-YouTui é um player de YouTube que roda inteiramente no terminal, permitindo buscar, tocar músicas/vídeos e gerenciar playlists sem sair da linha de comando. Interface bonita com thumbnails inline, controles completos e tema Catppuccin Mocha.
+YouTui is a YouTube player that runs entirely in the terminal, allowing you to search, play music/videos, and manage playlists without leaving the command line. Beautiful interface with inline thumbnails, complete controls, and 4 Catppuccin themes (light + dark).
 
-**Recursos principais:**
+**Key features:**
 
-- Busca rápida no YouTube (sem API keys)
-- Thumbnails em alta qualidade no terminal
-- Playlist com shuffle, repeat e navegação
-- Controles completos (play, pause, next, previous)
-- Barra de progresso em tempo real
-- Interface colorida e moderna
+- Fast YouTube search (no API keys required)
+- High-quality thumbnails in terminal
+- Playlist with shuffle, repeat, and navigation
+- Complete controls (play, pause, next, previous)
+- Real-time progress bar
+- 4 Catppuccin themes (🌻 Latte, 🪴 Frappé, 🌺 Macchiato, 🌿 Mocha)
+- Custom theme support
+- Multilingual (PT-BR and EN)
 
-## Dependências
+## Dependencies
 
-- **Go 1.24+** - Linguagem de programação
-- **mpv** - Player de mídia
-- **yt-dlp** - Extrator de vídeos do YouTube
-- **socat** - Comunicação IPC com mpv
-- **Nerd Font** (opcional) - Para ícones bonitos
+- **Go 1.24+** - Programming language
+- **mpv** - Media player
+- **yt-dlp** - YouTube video extractor
+- **socat** - IPC communication with mpv
+- **Nerd Font** (optional) - For beautiful icons
 
-## Instalação Rápida
+## Quick Install
 
 ```bash
-# Clone o repositório
+# Clone the repository
 git clone https://github.com/levirenato/YouTui
 cd YouTui
 
-# Instale dependências e compile (requer sudo)
+# Install dependencies and compile (requires sudo)
 make install
 
-# Ou apenas compile (se já tem as dependências)
+# Or just compile (if you already have dependencies)
 make build
 
-# Execute
+# Run
 ./youtui
 ```
 
-## Atalhos Principais
+## Main Shortcuts
 
-| Tecla     | Ação                 |
+| Key       | Action               |
 | --------- | -------------------- |
-| `/`       | Buscar               |
-| `Enter`   | Tocar/Buscar         |
-| `a`       | Adicionar à playlist |
-| `d`       | Remover da playlist  |
-| `Space`   | Pausar/Retomar       |
-| `n` / `b` | Próxima/Anterior     |
+| `/`       | Search               |
+| `Enter`   | Play/Search          |
+| `a`       | Add to playlist      |
+| `d`       | Remove from playlist |
+| `Space`   | Pause/Resume         |
+| `n` / `b` | Next/Previous        |
 | `h`       | Shuffle              |
-| `r`       | Modo repetição       |
-| `Tab`     | Alternar painéis     |
-| `?`       | Ajuda completa       |
-| `q`       | Sair                 |
+| `r`       | Repeat mode          |
+| `Tab`     | Switch panels        |
+| `?`       | Full help            |
+| `Ctrl+Q`  | Quit                 |
+| `Ctrl+C`  | Settings             |
 
-## Desenvolvimento
+## Themes
+
+YouTui includes 4 Catppuccin themes:
+
+- 🌻 **Latte** - Elegant light mode
+- 🪴 **Frappé** - Cool dark mode
+- 🌺 **Macchiato** - Warm dark mode
+- 🌿 **Mocha** - Deep dark mode (default)
+
+**Switch theme:**
+1. Press `Ctrl+C`
+2. Select "Theme"
+3. Choose from 4 available themes
+
+Theme is automatically saved to `~/.config/youtui/youtui.conf`
+
+**Custom theme:**
+See [THEMES.md](THEMES.md) for instructions on how to create your own theme.
+
+## Development
 
 ```bash
-# Verificar dependências
+# Check dependencies
 make check-deps
 
-# Compilar
+# Compile
 make build
 
-# Compilar e executar
+# Compile and run
 make run
 
-# Formatar código
+# Format code
 make fmt
 
-# Limpar arquivos gerados
+# Clean generated files
 make clean
 ```
 
-## Licença
+## License
 
 MIT License
 

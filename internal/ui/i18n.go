@@ -62,6 +62,7 @@ type Strings struct {
 
 	ModeChanged     string
 	ThemeComingSoon string
+	ThemeChanged    string
 	LanguageChanged string
 
 	Language string
@@ -164,6 +165,7 @@ var translations = map[Language]Strings{
 
 		ModeChanged:     "Modo: %s",
 		ThemeComingSoon: "Tema: Em breve!",
+		ThemeChanged:    "Tema alterado para: %s",
 		LanguageChanged: "Idioma alterado para: %s",
 
 		Language: "Idioma",
@@ -265,6 +267,7 @@ var translations = map[Language]Strings{
 
 		ModeChanged:     "Mode: %s",
 		ThemeComingSoon: "Theme: Coming soon!",
+		ThemeChanged:    "Theme changed to: %s",
 		LanguageChanged: "Language changed to: %s",
 
 		Language: "Language",
