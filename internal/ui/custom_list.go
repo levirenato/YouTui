@@ -36,7 +36,7 @@ func NewCustomList(theme *Theme) *CustomList {
 	wrapper := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(container, 0, 1, false)
-	
+
 	wrapper.SetBackgroundColor(theme.Base)
 
 	list := &CustomList{
@@ -89,9 +89,9 @@ func (c *CustomList) AddItem(track Track, index int) {
 
 	info := tview.NewTextView().
 		SetDynamicColors(true).
-		SetText(formatItemInfo(track, index)).
+		SetText(formatItemInfo(track, index, c.theme)).
 		SetTextAlign(tview.AlignLeft)
-	
+
 	info.SetBackgroundColor(c.theme.Base)
 	info.SetTextColor(c.theme.Text)
 
@@ -99,7 +99,7 @@ func (c *CustomList) AddItem(track Track, index int) {
 		SetDirection(tview.FlexColumn).
 		AddItem(thumb, 20, 0, false).
 		AddItem(info, 0, 1, false)
-	
+
 	itemFlex.SetBackgroundColor(c.theme.Base)
 
 	item := &CustomListItem{
@@ -255,7 +255,7 @@ func (c *CustomList) updateSelection() {
 			item.flex.SetBackgroundColor(c.theme.Base)
 			item.info.SetTextColor(c.theme.Text)
 			item.info.SetBackgroundColor(c.theme.Base)
-			item.info.SetText(formatItemInfo(item.track, item.index))
+			item.info.SetText(formatItemInfo(item.track, item.index, c.theme))
 		}
 	}
 }
@@ -278,7 +278,7 @@ func (c *CustomList) SetPlayingIndex(idx int) {
 	c.updateSelection()
 }
 
-func formatItemInfo(track Track, index int) string {
+func formatItemInfo(track Track, index int, theme *Theme) string {
 	icons := []string{"♪", "♫", "♬"}
 	icon := icons[index%len(icons)]
 
@@ -287,8 +287,9 @@ func formatItemInfo(track Track, index int) string {
 		title = title[:47] + "..."
 	}
 
-	return icon + " [yellow::b]" + title + "[-:-:-]\n" +
-		"[green]⏱ " + track.Duration + "[-] [cyan]• " + track.Author + "[-]"
+	return icon + " [" + colorTag(theme.Yellow) + "::b]" + title + "[-:-:-]\n" +
+		"[" + colorTag(theme.Green) + "]⏱ " + track.Duration + "[-] " +
+		"[" + colorTag(theme.Sapphire) + "]• " + track.Author + "[-]"
 }
 
 func formatItemInfoPlain(track Track, index int) string {
@@ -307,17 +308,17 @@ func formatItemInfoPlain(track Track, index int) string {
 func (c *CustomList) SetTheme(theme *Theme) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.theme = theme
 	c.SetBorderColor(theme.Surface0)
 	c.SetBackgroundColor(theme.Base)
 	c.container.SetBackgroundColor(theme.Base)
-	
+
 	for _, item := range c.items {
 		item.flex.SetBackgroundColor(theme.Base)
 		item.info.SetBackgroundColor(theme.Base)
 		item.info.SetTextColor(theme.Text)
 	}
-	
+
 	c.renderVisibleItems()
 }

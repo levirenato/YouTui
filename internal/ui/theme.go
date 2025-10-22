@@ -70,7 +70,7 @@ type ThemeTOML struct {
 }
 
 var CatppuccinLatte = Theme{
-	Name:      "🌻 Latte",
+	Name:      "Latte",
 	ID:        "catppuccin-latte",
 	Rosewater: tcell.NewHexColor(0xdc8a78),
 	Flamingo:  tcell.NewHexColor(0xdd7878),
@@ -101,7 +101,7 @@ var CatppuccinLatte = Theme{
 }
 
 var CatppuccinFrappe = Theme{
-	Name:      "🪴 Frappé",
+	Name:      "Frappé",
 	ID:        "catppuccin-frappe",
 	Rosewater: tcell.NewHexColor(0xf2d5cf),
 	Flamingo:  tcell.NewHexColor(0xeebebe),
@@ -132,7 +132,7 @@ var CatppuccinFrappe = Theme{
 }
 
 var CatppuccinMacchiato = Theme{
-	Name:      "🌺 Macchiato",
+	Name:      "Macchiato",
 	ID:        "catppuccin-macchiato",
 	Rosewater: tcell.NewHexColor(0xf4dbd6),
 	Flamingo:  tcell.NewHexColor(0xf0c6c6),
@@ -163,7 +163,7 @@ var CatppuccinMacchiato = Theme{
 }
 
 var CatppuccinMocha = Theme{
-	Name:      "🌿 Mocha",
+	Name:      "Mocha",
 	ID:        "catppuccin-mocha",
 	Rosewater: tcell.NewHexColor(0xf5e0dc),
 	Flamingo:  tcell.NewHexColor(0xf2cdcd),
@@ -254,7 +254,7 @@ func GetThemeByID(id string) *Theme {
 
 func LoadCustomTheme(path string) (*Theme, error) {
 	var themeTOML ThemeTOML
-	
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -302,12 +302,17 @@ func parseHexColor(hex string) tcell.Color {
 	if len(hex) > 0 && hex[0] == '#' {
 		hex = hex[1:]
 	}
-	
+
 	var r, g, b uint8
 	if len(hex) == 6 {
 		fmt.Sscanf(hex, "%02x%02x%02x", &r, &g, &b)
 		return tcell.NewRGBColor(int32(r), int32(g), int32(b))
 	}
-	
+
 	return tcell.ColorDefault
+}
+
+func colorTag(c tcell.Color) string {
+	// tcell v2 tem .Hex()
+	return fmt.Sprintf("#%06x", c.Hex()) // ex: "#855511"
 }

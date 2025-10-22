@@ -5,7 +5,17 @@ import (
 	"math/rand/v2"
 	"os/exec"
 	"time"
+
+	"github.com/gdamore/tcell/v2"
 )
+
+func (a *SimpleApp) setStatus(color tcell.Color, msg string) {
+	a.statusBar.SetText("[" + colorTag(color) + "]" + msg)
+}
+
+func (a *SimpleApp) setStatusf(color tcell.Color, format string, args ...any) {
+	a.statusBar.SetText(fmt.Sprintf("["+colorTag(color)+"]"+format, args...))
+}
 
 func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.mu.Lock()
@@ -40,7 +50,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	cmd := exec.Command("mpv", args...)
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ Erro mpv: %v", err))
+			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
 		})
 		return
 	}
@@ -61,7 +71,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
 		a.playlist.SetPlayingIndex(idx)
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ "+a.strings.Playing+": %s", track.Title))
+		a.setStatusf(a.theme.Green, "▶ %s: %s", a.strings.Playing, track.Title)
 	})
 
 	a.startProgressUpdater()
@@ -140,7 +150,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 			a.app.QueueUpdateDraw(func() {
 				a.updatePlayerInfo()
-				a.statusBar.SetText("[yellow]" + a.strings.PlaylistFinished)
+				a.setStatus(a.theme.Yellow, a.strings.PlaylistFinished)
 			})
 		}
 	}(cmd)
@@ -170,7 +180,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	cmd := exec.Command("mpv", args...)
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ Erro mpv: %v", err))
+			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
 		})
 		return
 	}
@@ -191,7 +201,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 		a.updatePlayerInfo()
 		a.updateThumbnail(track.Thumbnail)
 		a.playlist.SetPlayingIndex(-1)
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ "+a.strings.PlayingWithoutPlaylist, track.Title))
+		a.setStatusf(a.theme.Green, "▶ "+a.strings.PlayingWithoutPlaylist, track.Title)
 	})
 
 	a.startProgressUpdater()
@@ -209,7 +219,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 		a.app.QueueUpdateDraw(func() {
 			a.updatePlayerInfo()
-			a.statusBar.SetText("[yellow]" + a.strings.PlaybackFinished)
+			a.setStatus(a.theme.Yellow, a.strings.PlaybackFinished)
 		})
 	}(cmd)
 }
@@ -222,7 +232,7 @@ func (a *SimpleApp) togglePause() {
 
 	if !isPlaying || socket == "" {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]⚠ "+a.strings.StateError, isPlaying, socket))
+			a.setStatusf(a.theme.Red, "⚠ "+a.strings.StateError, isPlaying, socket)
 		})
 		return
 	}
@@ -231,7 +241,7 @@ func (a *SimpleApp) togglePause() {
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ "+a.strings.Error, err, string(output)))
+			a.setStatusf(a.theme.Red, "❌ "+a.strings.Error, err, string(output))
 		})
 		return
 	}
@@ -244,9 +254,9 @@ func (a *SimpleApp) togglePause() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		if isPaused {
-			a.statusBar.SetText("[yellow]⏸ " + a.strings.Paused)
+			a.setStatus(a.theme.Yellow, "⏸ "+a.strings.Paused)
 		} else {
-			a.statusBar.SetText("[green]▶ " + a.strings.Playing)
+			a.setStatus(a.theme.Green, "▶ "+a.strings.Playing)
 		}
 	})
 }
@@ -266,7 +276,7 @@ func (a *SimpleApp) stopPlayback() {
 		a.updatePlayerInfo()
 		a.updateThumbnail("")
 		a.playlist.SetPlayingIndex(-1)
-		a.statusBar.SetText("[red]⏹ " + a.strings.Stopped)
+		a.setStatus(a.theme.Red, "⏹ "+a.strings.Stopped)
 	})
 }
 
@@ -279,7 +289,7 @@ func (a *SimpleApp) playNext() {
 	if playlistLen == 0 {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.PlaylistEmpty)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.PlaylistEmpty)
 		})
 		return
 	}
@@ -287,7 +297,7 @@ func (a *SimpleApp) playNext() {
 	if !currentIsPlaying {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.NothingPlaying)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.NothingPlaying)
 		})
 		return
 	}
@@ -297,7 +307,7 @@ func (a *SimpleApp) playNext() {
 		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[cyan]▶ " + a.strings.EnteringPlaylist)
+			a.setStatus(a.theme.Sapphire, "▶ "+a.strings.EnteringPlaylist)
 		})
 		go a.playTrackSimple(track, 0)
 		return
@@ -324,7 +334,7 @@ func (a *SimpleApp) playNext() {
 			} else {
 				a.mu.Unlock()
 				a.app.QueueUpdateDraw(func() {
-					a.statusBar.SetText("[yellow]" + a.strings.AlreadyLastSong)
+					a.setStatus(a.theme.Yellow, a.strings.AlreadyLastSong)
 				})
 				return
 			}
@@ -336,7 +346,7 @@ func (a *SimpleApp) playNext() {
 	a.mu.Unlock()
 
 	a.app.QueueUpdateDraw(func() {
-		a.statusBar.SetText(fmt.Sprintf("[green]▶ "+a.strings.SkippingTo, next+1, playlistLen, track.Title))
+		a.setStatusf(a.theme.Green, "▶ "+a.strings.SkippingTo, next+1, playlistLen, track.Title)
 	})
 
 	go a.playTrackSimple(track, next)
@@ -349,7 +359,7 @@ func (a *SimpleApp) playPrevious() {
 	if playlistLen == 0 {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.PlaylistEmpty)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.PlaylistEmpty)
 		})
 		return
 	}
@@ -357,7 +367,7 @@ func (a *SimpleApp) playPrevious() {
 	if !a.isPlaying {
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.NothingPlaying)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.NothingPlaying)
 		})
 		return
 	}
@@ -368,7 +378,7 @@ func (a *SimpleApp) playPrevious() {
 		a.skipAutoPlay = true
 		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[cyan]▶ " + a.strings.EnteringPlaylist)
+			a.setStatus(a.theme.Sapphire, "▶ "+a.strings.EnteringPlaylist)
 		})
 		go a.playTrackSimple(track, lastIdx)
 		return
@@ -381,7 +391,7 @@ func (a *SimpleApp) playPrevious() {
 		} else {
 			a.mu.Unlock()
 			a.app.QueueUpdateDraw(func() {
-				a.statusBar.SetText("[yellow]" + a.strings.AlreadyFirstSong)
+				a.setStatus(a.theme.Yellow, a.strings.AlreadyFirstSong)
 			})
 			return
 		}
@@ -403,6 +413,6 @@ func (a *SimpleApp) toggleMode() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateModeBadge()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  "+a.strings.ModeChanged, a.playMode.String()))
+		a.setStatusf(a.theme.Sapphire, "  "+a.strings.ModeChanged, a.playMode.String())
 	})
 }
