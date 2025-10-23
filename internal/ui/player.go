@@ -1,9 +1,11 @@
 package ui
 
 import (
+	"bytes"
 	"fmt"
 	"math/rand/v2"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -33,7 +35,6 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 	args := []string{
 		"--no-terminal",
-		"--really-quiet",
 		"--script-opts=ytdl_hook-ytdl_path=yt-dlp",
 		fmt.Sprintf("--title=%s", track.Title),
 		fmt.Sprintf("--input-ipc-server=%s", socketPath),
@@ -48,6 +49,10 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	args = append(args, track.URL)
 
 	cmd := exec.Command("mpv", args...)
+	
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+	
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
@@ -77,13 +82,32 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.startProgressUpdater()
 
 	go func(expectedCmd *exec.Cmd) {
-		expectedCmd.Wait()
+		err := expectedCmd.Wait()
 
 		time.Sleep(500 * time.Millisecond)
 
 		a.mu.Lock()
 		if a.mpvProcess != expectedCmd {
 			a.mu.Unlock()
+			return
+		}
+
+		if err != nil {
+			a.isPlaying = false
+			a.mu.Unlock()
+			
+			stderrOutput := stderrBuf.String()
+			if strings.Contains(stderrOutput, "403") || strings.Contains(stderrOutput, "HTTP error 403") {
+				a.app.QueueUpdateDraw(func() {
+					a.updatePlayerInfo()
+					a.setStatus(a.theme.Red, "❌ YouTube bloqueou (403). Atualize yt-dlp: sudo yt-dlp -U")
+				})
+			} else {
+				a.app.QueueUpdateDraw(func() {
+					a.updatePlayerInfo()
+					a.setStatusf(a.theme.Red, "❌ "+a.strings.MpvError, err)
+				})
+			}
 			return
 		}
 
@@ -163,7 +187,6 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 	args := []string{
 		"--no-terminal",
-		"--really-quiet",
 		"--script-opts=ytdl_hook-ytdl_path=yt-dlp",
 		fmt.Sprintf("--title=%s", track.Title),
 		fmt.Sprintf("--input-ipc-server=%s", socketPath),
@@ -178,6 +201,10 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	args = append(args, track.URL)
 
 	cmd := exec.Command("mpv", args...)
+	
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+	
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
@@ -207,7 +234,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	a.startProgressUpdater()
 
 	go func(expectedCmd *exec.Cmd) {
-		expectedCmd.Wait()
+		err := expectedCmd.Wait()
 
 		a.mu.Lock()
 		if a.mpvProcess != expectedCmd {
@@ -219,7 +246,16 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 		a.app.QueueUpdateDraw(func() {
 			a.updatePlayerInfo()
-			a.setStatus(a.theme.Yellow, a.strings.PlaybackFinished)
+			if err != nil {
+				stderrOutput := stderrBuf.String()
+				if strings.Contains(stderrOutput, "403") || strings.Contains(stderrOutput, "HTTP error 403") {
+					a.setStatus(a.theme.Red, "❌ YouTube bloqueou (403). Atualize yt-dlp: sudo yt-dlp -U")
+				} else {
+					a.setStatusf(a.theme.Red, "❌ "+a.strings.MpvError, err)
+				}
+			} else {
+				a.setStatus(a.theme.Yellow, a.strings.PlaybackFinished)
+			}
 		})
 	}(cmd)
 }

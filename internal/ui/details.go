@@ -58,7 +58,7 @@ func (a *SimpleApp) updateSearchDetails(idx int) {
 	}
 
 	basicDetails := fmt.Sprintf(
-		"[yellow::b]%s[-:-:-]\n[cyan]%s:[-] %s\n[green]%s:[-] %s\n\n[gray]%s[-]",
+		"[" + colorTag(a.theme.Yellow) + "::b]%s[-:-:-]\n[" + colorTag(a.theme.Sapphire) + "]%s:[-] %s\n[" + colorTag(a.theme.Green) + "]%s:[-] %s\n\n[" + colorTag(a.theme.Subtext0) + "]%s[-]",
 		title,
 		a.strings.Channel,
 		author,

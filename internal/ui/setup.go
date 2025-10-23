@@ -282,7 +282,7 @@ func (a *SimpleApp) cycleLanguage() {
 	a.refreshUI()
 
 	langName := GetLanguageName(a.language)
-	a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.LanguageChanged, langName))
+	a.setStatus(a.theme.Green, "✓ "+fmt.Sprintf(a.strings.LanguageChanged, langName))
 }
 
 func (a *SimpleApp) cycleTheme() {
@@ -308,7 +308,7 @@ func (a *SimpleApp) cycleTheme() {
 	a.applyTheme()
 	a.refreshUI()
 
-	a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.ThemeChanged, a.theme.Name))
+	a.setStatus(a.theme.Green, "✓ "+fmt.Sprintf(a.strings.ThemeChanged, a.theme.Name))
 }
 
 func (a *SimpleApp) applyTheme() {

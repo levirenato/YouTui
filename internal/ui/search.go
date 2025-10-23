@@ -20,7 +20,7 @@ func (a *SimpleApp) onSearchDone(key tcell.Key) {
 
 func (a *SimpleApp) doSearch(query string) {
 	a.app.QueueUpdateDraw(func() {
-		a.statusBar.SetText("[yellow]  " + a.strings.Searching)
+		a.setStatus(a.theme.Yellow, "  " + a.strings.Searching)
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -29,7 +29,7 @@ func (a *SimpleApp) doSearch(query string) {
 	results, err := search.SearchVideos(ctx, query, 30)
 	if err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[red]❌ "+a.strings.SearchError, err))
+			a.setStatusf(a.theme.Red, "❌ "+a.strings.SearchError, err)
 		})
 		return
 	}
@@ -57,8 +57,8 @@ func (a *SimpleApp) doSearch(query string) {
 	a.displayCurrentPage()
 
 	a.app.QueueUpdateDraw(func() {
-		a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.FoundResults,
-			len(tracksCopy), 1, a.pagination.GetTotalPages()))
+		a.setStatusf(a.theme.Green, "✓ "+a.strings.FoundResults,
+			len(tracksCopy), 1, a.pagination.GetTotalPages())
 		a.app.SetFocus(a.searchResults.Flex)
 		a.updateCommandBar()
 	})
@@ -105,11 +105,11 @@ func (a *SimpleApp) nextPage() {
 		currentPage := a.pagination.GetCurrentPage() + 1
 		totalPages := a.pagination.GetTotalPages()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[cyan]→ "+a.strings.NextPage, currentPage, totalPages))
+			a.setStatusf(a.theme.Sapphire, "→ "+a.strings.NextPage, currentPage, totalPages)
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.AlreadyLastPage)
+			a.setStatus(a.theme.Yellow, "⚠ " + a.strings.AlreadyLastPage)
 		})
 	}
 }
@@ -120,11 +120,11 @@ func (a *SimpleApp) prevPage() {
 		currentPage := a.pagination.GetCurrentPage() + 1
 		totalPages := a.pagination.GetTotalPages()
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText(fmt.Sprintf("[cyan]← "+a.strings.PrevPage, currentPage, totalPages))
+			a.setStatusf(a.theme.Sapphire, "← "+a.strings.PrevPage, currentPage, totalPages)
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {
-			a.statusBar.SetText("[yellow]⚠ " + a.strings.AlreadyFirstPage)
+			a.setStatus(a.theme.Yellow, "⚠ " + a.strings.AlreadyFirstPage)
 		})
 	}
 }

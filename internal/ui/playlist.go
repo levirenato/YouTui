@@ -34,7 +34,7 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 		}
 
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
-		a.statusBar.SetText(fmt.Sprintf("[green]✓ "+a.strings.AddedToPlaylist, track.Title))
+		a.setStatus(a.theme.Green, "✓ "+fmt.Sprintf(a.strings.AddedToPlaylist, track.Title))
 	})
 }
 
@@ -80,7 +80,7 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 
-		a.statusBar.SetText("[yellow]✓ " + a.strings.RemovedFromPlaylist)
+		a.setStatus(a.theme.Yellow, "✓ " + a.strings.RemovedFromPlaylist)
 	})
 }
 
@@ -133,7 +133,7 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 
-		a.statusBar.SetText("[cyan]✓ " + a.strings.ItemMoved)
+		a.setStatus(a.theme.Sapphire, "✓ " + a.strings.ItemMoved)
 	})
 }
 
@@ -150,7 +150,7 @@ func (a *SimpleApp) cycleRepeatMode() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updatePlaylistFooter()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  "+a.strings.ModeChanged, a.playlistMode.String()))
+		a.setStatus(a.theme.Sapphire, "  "+fmt.Sprintf(a.strings.ModeChanged, a.playlistMode.String()))
 	})
 }
 
@@ -164,6 +164,6 @@ func (a *SimpleApp) toggleShuffle() {
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updatePlaylistFooter()
-		a.statusBar.SetText(fmt.Sprintf("[cyan]  "+a.strings.ModeChanged, a.playlistMode.String()))
+		a.setStatus(a.theme.Sapphire, "  "+fmt.Sprintf(a.strings.ModeChanged, a.playlistMode.String()))
 	})
 }

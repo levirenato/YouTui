@@ -97,9 +97,9 @@ func (a *SimpleApp) updatePlayerInfo() {
 	var titleLine string
 	if isPlaying {
 		if author != "" && author != str.Unknown {
-			titleLine = fmt.Sprintf("[white::b] %s [gray]•[-] [#a6adc8]%s[-]", nowPlaying, author)
+			titleLine = fmt.Sprintf("[" + colorTag(a.theme.Text) + "::b] %s [" + colorTag(a.theme.Subtext0) + "]•[-] [" + colorTag(a.theme.Subtext1) + "]%s[-]", nowPlaying, author)
 		} else {
-			titleLine = fmt.Sprintf("[white::b] %s[-:-:-]", nowPlaying)
+			titleLine = fmt.Sprintf("[" + colorTag(a.theme.Text) + "::b] %s[-:-:-]", nowPlaying)
 		}
 
 		if currentTrack >= 0 && playlistLen > 0 {
@@ -109,19 +109,19 @@ func (a *SimpleApp) updatePlayerInfo() {
 			}
 			posText := fmt.Sprintf("[%d/%d]", currentTrack+1, playlistLen)
 			padding := max(width-len(plainTitle)-len(posText)-2, 0)
-			titleLine += strings.Repeat(" ", padding) + fmt.Sprintf("[#585b70]%s[-]", posText)
+			titleLine += strings.Repeat(" ", padding) + fmt.Sprintf("[" + colorTag(a.theme.Surface2) + "]%s[-]", posText)
 		}
 	} else {
-		titleLine = "[gray]⏹ " + str.NoTrackPlaying + "[-]"
+		titleLine = "[" + colorTag(a.theme.Subtext0) + "]⏹ " + str.NoTrackPlaying + "[-]"
 	}
 
 	var progressLine string
 	if isPlaying && duration > 0 {
 		icon := "▶"
-		iconColor := "green"
+		iconColor := colorTag(a.theme.Green)
 		if isPaused {
 			icon = "⏸"
-			iconColor = "yellow"
+			iconColor = colorTag(a.theme.Yellow)
 		}
 
 		percentage := position / duration
@@ -145,7 +145,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 		durMin := int(duration / 60)
 		durSec := int(duration) % 60
 
-		progressLine = fmt.Sprintf("[%s]%s[-] [blue]%s[gray]%s[-]  [cyan]%02d:%02d[-] [#585b70]/[-] [white]%02d:%02d[-]",
+		progressLine = fmt.Sprintf("[%s]%s[-] [" + colorTag(a.theme.Blue) + "]%s[" + colorTag(a.theme.Surface1) + "]%s[-]  [" + colorTag(a.theme.Sapphire) + "]%02d:%02d[-] [" + colorTag(a.theme.Surface2) + "]/[-] [" + colorTag(a.theme.Text) + "]%02d:%02d[-]",
 			iconColor, icon,
 			strings.Repeat("█", filledBars),
 			strings.Repeat("░", emptyBars),
@@ -159,7 +159,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 		if totalBars > 100 {
 			totalBars = 100
 		}
-		progressLine = fmt.Sprintf("[gray]⏹ %s  --:-- / --:--[-]", strings.Repeat("░", totalBars))
+		progressLine = fmt.Sprintf("[" + colorTag(a.theme.Subtext0) + "]⏹ %s  --:-- / --:--[-]", strings.Repeat("░", totalBars))
 	}
 
 	a.playerInfo.SetText(fmt.Sprintf("%s\n%s", titleLine, progressLine))
@@ -173,9 +173,9 @@ func (a *SimpleApp) updateModeBadge() {
 
 	var badge string
 	if mode == ModeVideo {
-		badge = "[gray]m[-] [black:blue:b]   " + strings.Video + " [-:-:-] "
+		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Blue) + ":b]   " + strings.Video + " [-:-:-] "
 	} else {
-		badge = "[gray]m[-] [black:green:b]   " + strings.Audio + " [-:-:-] "
+		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Green) + ":b]   " + strings.Audio + " [-:-:-] "
 	}
 
 	a.modeBadge.SetText(badge)
@@ -190,13 +190,13 @@ func (a *SimpleApp) updatePlaylistFooter() {
 	var footer string
 	switch mode {
 	case ModeShuffle:
-		footer = "[#94e2d5]  " + strings.Shuffle + "[-]"
+		footer = "[" + colorTag(a.theme.Teal) + "]  " + strings.Shuffle + "[-]"
 	case ModeRepeatOne:
-		footer = "[#fab387]󰑘 " + strings.RepeatOne + "[-]"
+		footer = "[" + colorTag(a.theme.Peach) + "]󰑘 " + strings.RepeatOne + "[-]"
 	case ModeRepeatAll:
-		footer = "[#a6e3a1]󰑖 " + strings.RepeatAll + "[-]"
+		footer = "[" + colorTag(a.theme.Green) + "]󰑖 " + strings.RepeatAll + "[-]"
 	default:
-		footer = "[#585b70]󰑗 " + strings.NoRepeat + "[-]"
+		footer = "[" + colorTag(a.theme.Surface2) + "]󰑗 " + strings.NoRepeat + "[-]"
 	}
 
 	a.playlistFooter.SetText(footer)

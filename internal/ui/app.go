@@ -154,6 +154,16 @@ func NewSimpleApp() *SimpleApp {
 	tview.Styles.ContrastSecondaryTextColor = theme.Subtext0
 
 	app.setupUI()
+	
+	go func() {
+		currentVersion, _, needsUpdate := CheckYtDlpVersion()
+		if needsUpdate {
+			app.app.QueueUpdateDraw(func() {
+				app.setStatus(app.theme.Yellow, "⚠ yt-dlp desatualizado ("+currentVersion+"). Atualize: sudo yt-dlp -U")
+			})
+		}
+	}()
+	
 	return app
 }
 
