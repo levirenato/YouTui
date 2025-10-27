@@ -1,3 +1,4 @@
+// Package config to read config file
 package config
 
 import (
@@ -26,7 +27,7 @@ func GetConfigPath() string {
 
 func LoadConfig() (*Config, error) {
 	configPath := GetConfigPath()
-	
+
 	cfg := &Config{
 		Theme: ThemeConfig{
 			Active: "catppuccin-mocha",
@@ -45,11 +46,11 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func SaveConfig(cfg *Config) error {
+func SaveConfig(cfg *Config) (err error) {
 	configPath := GetConfigPath()
-	
+
 	dir := filepath.Dir(configPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err = os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
@@ -57,8 +58,16 @@ func SaveConfig(cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	encoder := toml.NewEncoder(f)
-	return encoder.Encode(cfg)
+	if err = encoder.Encode(cfg); err != nil {
+		return err
+	}
+	return nil
 }

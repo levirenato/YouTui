@@ -1,3 +1,4 @@
+// Package components
 package components
 
 func GetTrackIcon(idx int) string {

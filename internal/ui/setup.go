@@ -36,7 +36,7 @@ func (a *SimpleApp) setupSearchComponents() {
 	a.searchResults = NewCustomList(a.theme)
 	a.searchResults.SetTitle(" " + a.strings.Results + " [0] ")
 	a.searchResults.SetSelectedFunc(func(idx int) {
-		a.onResultSelectedCustom(idx)
+		a.onResultSelectedCustom()
 	})
 }
 
@@ -44,7 +44,7 @@ func (a *SimpleApp) setupPlaylistComponent() {
 	a.playlist = NewCustomList(a.theme)
 	a.playlist.SetTitle(fmt.Sprintf(" %s [0] ", a.strings.Playlist))
 	a.playlist.SetSelectedFunc(func(idx int) {
-		a.onPlaylistSelectedCustom(idx)
+		a.onPlaylistSelectedCustom()
 	})
 
 	a.playlistFooter = tview.NewTextView().
@@ -330,18 +330,18 @@ func (a *SimpleApp) applyTheme() {
 
 	a.searchResults.SetTheme(a.theme)
 	a.playlist.SetTheme(a.theme)
-	
+
 	a.playerBox.SetBorderColor(a.theme.Surface0)
 
 	a.statusBar.SetBackgroundColor(a.theme.Base)
 	a.statusBar.SetTextColor(a.theme.Text)
-	
+
 	a.commandBar.SetBackgroundColor(a.theme.Base)
 	a.commandBar.SetTextColor(a.theme.Subtext1)
-	
+
 	a.modeBadge.SetBackgroundColor(a.theme.Base)
 	a.modeBadge.SetTextColor(a.theme.Mauve)
-	
+
 	a.playlistFooter.SetBackgroundColor(a.theme.Base)
 	a.playlistFooter.SetTextColor(a.theme.Subtext0)
 

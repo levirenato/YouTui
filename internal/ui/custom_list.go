@@ -142,17 +142,11 @@ func (c *CustomList) renderVisibleItems() {
 		height = 30
 	}
 
-	itemsPerPage := height / 3
-	if itemsPerPage < 1 {
-		itemsPerPage = 1
-	}
+	itemsPerPage := max(height/3, 1)
 
 	c.visibleHeight = itemsPerPage
 
-	end := c.visibleStart + c.visibleHeight
-	if end > len(c.items) {
-		end = len(c.items)
-	}
+	end := min(c.visibleStart+c.visibleHeight, len(c.items))
 
 	if len(c.items) == 0 {
 		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
@@ -241,17 +235,18 @@ func (c *CustomList) SetSelectedFunc(handler func(int)) {
 
 func (c *CustomList) updateSelection() {
 	for i, item := range c.items {
-		if i == c.selectedIndex {
+		switch i {
+		case c.selectedIndex:
 			item.flex.SetBackgroundColor(c.theme.Blue)
 			item.info.SetTextColor(c.theme.Crust)
 			item.info.SetBackgroundColor(c.theme.Blue)
 			item.info.SetText(formatItemInfoPlain(item.track, item.index))
-		} else if i == c.playingIndex {
+		case c.playingIndex:
 			item.flex.SetBackgroundColor(c.theme.Green)
 			item.info.SetTextColor(c.theme.Crust)
 			item.info.SetBackgroundColor(c.theme.Green)
 			item.info.SetText(formatItemInfoPlain(item.track, item.index))
-		} else {
+		default:
 			item.flex.SetBackgroundColor(c.theme.Base)
 			item.info.SetTextColor(c.theme.Text)
 			item.info.SetBackgroundColor(c.theme.Base)

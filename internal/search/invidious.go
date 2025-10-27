@@ -1,3 +1,4 @@
+// Package search
 package search
 
 import (
@@ -7,13 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"strconv"
 	"strings"
 )
 
 type Video struct {
 	Title         string `json:"title"`
-	VideoId       string `json:"videoId"`
+	VideoID       string `json:"videoId"`
 	Author        string `json:"author"`
 	LengthSeconds int    `json:"lengthSeconds"`
 	ViewCount     int64  `json:"viewCount"`
@@ -222,9 +222,4 @@ func GetVideoDetails(ctx context.Context, url string) (*Result, error) {
 		PublishedAt: publishedAt,
 		Description: description,
 	}, nil
-}
-
-func atoi(s string) int {
-	n, _ := strconv.Atoi(strings.TrimSpace(s))
-	return n
 }

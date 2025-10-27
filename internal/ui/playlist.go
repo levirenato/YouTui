@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (a *SimpleApp) onPlaylistSelectedCustom(idx int) {
+func (a *SimpleApp) onPlaylistSelectedCustom() {
 	track := a.playlist.GetCurrentTrack()
 	if track != nil {
 		a.mu.Lock()
@@ -80,7 +80,7 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 
-		a.setStatus(a.theme.Yellow, "✓ " + a.strings.RemovedFromPlaylist)
+		a.setStatus(a.theme.Yellow, "✓ "+a.strings.RemovedFromPlaylist)
 	})
 }
 
@@ -133,7 +133,7 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 		a.mu.Unlock()
 		a.playlist.SetPlayingIndex(currentIdx)
 
-		a.setStatus(a.theme.Sapphire, "✓ " + a.strings.ItemMoved)
+		a.setStatus(a.theme.Sapphire, "✓ "+a.strings.ItemMoved)
 	})
 }
 

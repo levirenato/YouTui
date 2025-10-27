@@ -1,3 +1,4 @@
+// Package ui
 package ui
 
 import (
@@ -41,9 +42,9 @@ const (
 
 func (m PlayMode) String() string {
 	if m == ModeAudio {
-		return " Audio"
+		return " Audio"
 	}
-	return "  Video"
+	return "󰗃 Video"
 }
 
 type Track struct {
@@ -111,7 +112,7 @@ type SimpleApp struct {
 
 func NewSimpleApp() *SimpleApp {
 	cfg, _ := config.LoadConfig()
-	
+
 	var theme *Theme
 	if cfg.Theme.Active == "custom" && cfg.Theme.CustomPath != "" {
 		customTheme, err := LoadCustomTheme(cfg.Theme.CustomPath)
@@ -123,7 +124,7 @@ func NewSimpleApp() *SimpleApp {
 	} else {
 		theme = GetThemeByID(cfg.Theme.Active)
 	}
-	
+
 	lang := LanguageEN
 	thumbCache, _ := NewThumbnailCache()
 
@@ -154,7 +155,7 @@ func NewSimpleApp() *SimpleApp {
 	tview.Styles.ContrastSecondaryTextColor = theme.Subtext0
 
 	app.setupUI()
-	
+
 	go func() {
 		currentVersion, _, needsUpdate := CheckYtDlpVersion()
 		if needsUpdate {
@@ -163,7 +164,7 @@ func NewSimpleApp() *SimpleApp {
 			})
 		}
 	}()
-	
+
 	return app
 }
 
