@@ -75,6 +75,8 @@ func (a *SimpleApp) updatePlayerInfo() {
 		width = 80
 	}
 
+	a.playerBox.SetBackgroundColor(a.theme.Base)
+	a.thumbnailView.SetBackgroundColor(a.theme.Base)
 	a.mu.Lock()
 	isPlaying := a.isPlaying
 	isPaused := a.isPaused
@@ -132,10 +134,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 			percentage = 0
 		}
 
-		totalBars := max(width-18, 20)
-		if totalBars > 100 {
-			totalBars = 100
-		}
+		totalBars := min(max(width-18, 20), 100)
 
 		filledBars := int(percentage * float64(totalBars))
 		emptyBars := totalBars - filledBars
@@ -152,13 +151,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 			posMin, posSec,
 			durMin, durSec)
 	} else {
-		totalBars := width - 18
-		if totalBars < 20 {
-			totalBars = 20
-		}
-		if totalBars > 100 {
-			totalBars = 100
-		}
+		totalBars := min(max(width-18, 20), 100)
 		progressLine = fmt.Sprintf("["+colorTag(a.theme.Subtext0)+"]⏹ %s  --:-- / --:--[-]", strings.Repeat("░", totalBars))
 	}
 

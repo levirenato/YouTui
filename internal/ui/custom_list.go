@@ -87,6 +87,8 @@ func (c *CustomList) AddItem(track Track, index int) {
 		SetColors(tview.TrueColor).
 		SetDithering(tview.DitheringFloydSteinberg)
 
+	thumb.SetBackgroundColor(c.theme.Base)
+
 	info := tview.NewTextView().
 		SetDynamicColors(true).
 		SetText(formatItemInfo(track, index, c.theme)).
@@ -311,6 +313,7 @@ func (c *CustomList) SetTheme(theme *Theme) {
 
 	for _, item := range c.items {
 		item.flex.SetBackgroundColor(theme.Base)
+		item.thumbnail.SetBackgroundColor(theme.Base)
 		item.info.SetBackgroundColor(theme.Base)
 		item.info.SetTextColor(theme.Text)
 	}

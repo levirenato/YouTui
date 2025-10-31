@@ -102,6 +102,8 @@ func (a *SimpleApp) updateCommandBar() {
 	focused := a.app.GetFocus()
 
 	a.searchInput.SetBorderColor(a.theme.Surface0)
+	a.searchInput.SetBackgroundColor(a.theme.Base)
+	a.searchInput.SetTitleColor(a.theme.Surface0)
 	a.searchResults.SetBorderColor(a.theme.Surface0)
 	a.playlist.SetBorderColor(a.theme.Surface0)
 	a.playerBox.SetBorderColor(a.theme.Surface0)
