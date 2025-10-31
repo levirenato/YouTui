@@ -139,7 +139,7 @@ func (c *CustomList) Clear() {
 func (c *CustomList) renderVisibleItems() {
 	c.container.Clear()
 
-	_, _, _, height := c.Flex.GetInnerRect()
+	_, _, _, height := c.GetInnerRect()
 	if height < 3 {
 		height = 30
 	}

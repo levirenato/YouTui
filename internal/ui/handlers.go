@@ -103,7 +103,7 @@ func (a *SimpleApp) updateCommandBar() {
 
 	a.searchInput.SetBorderColor(a.theme.Surface0)
 	a.searchInput.SetBackgroundColor(a.theme.Base)
-	a.searchInput.SetTitleColor(a.theme.Surface0)
+	a.searchInput.SetTitleColor(a.theme.Subtext0)
 	a.searchResults.SetBorderColor(a.theme.Surface0)
 	a.playlist.SetBorderColor(a.theme.Surface0)
 	a.playerBox.SetBorderColor(a.theme.Surface0)

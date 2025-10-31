@@ -76,6 +76,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 	}
 
 	a.playerBox.SetBackgroundColor(a.theme.Base)
+	a.playerBox.SetTitleColor(a.theme.Subtext0)
 	a.thumbnailView.SetBackgroundColor(a.theme.Base)
 	a.mu.Lock()
 	isPlaying := a.isPlaying
@@ -163,6 +164,7 @@ func (a *SimpleApp) updateModeBadge() {
 	mode := a.playMode
 	strings := a.strings
 	a.mu.Unlock()
+	a.playerInfo.SetTitleColor(a.theme.Subtext0)
 
 	var badge string
 	if mode == ModeVideo {
@@ -179,6 +181,7 @@ func (a *SimpleApp) updatePlaylistFooter() {
 	mode := a.playlistMode
 	strings := a.strings
 	a.mu.Unlock()
+	a.searchResults.SetTitleColor(a.theme.Subtext0)
 
 	var footer string
 	switch mode {

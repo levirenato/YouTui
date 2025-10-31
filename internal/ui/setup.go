@@ -364,6 +364,7 @@ func (a *SimpleApp) refreshUI() {
 
 	count := len(a.playlistTracks)
 	a.playlist.SetTitle(fmt.Sprintf(" %s [%d] ", a.strings.Playlist, count))
+	a.playlist.SetTitleColor(a.theme.Subtext0)
 
 	a.playerBox.SetTitle(" " + a.strings.Player + " ")
 

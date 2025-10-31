@@ -72,125 +72,125 @@ type ThemeTOML struct {
 var CatppuccinLatte = Theme{
 	Name:      "Latte",
 	ID:        "catppuccin-latte",
-	Rosewater: tcell.NewHexColor(0xdc8a78),
-	Flamingo:  tcell.NewHexColor(0xdd7878),
-	Pink:      tcell.NewHexColor(0xea76cb),
-	Mauve:     tcell.NewHexColor(0x8839ef),
-	Red:       tcell.NewHexColor(0xd20f39),
-	Maroon:    tcell.NewHexColor(0xe64553),
-	Peach:     tcell.NewHexColor(0xfe640b),
-	Yellow:    tcell.NewHexColor(0xdf8e1d),
-	Green:     tcell.NewHexColor(0x40a02b),
-	Teal:      tcell.NewHexColor(0x179299),
-	Sky:       tcell.NewHexColor(0x04a5e5),
-	Sapphire:  tcell.NewHexColor(0x209fb5),
-	Blue:      tcell.NewHexColor(0x1e66f5),
-	Lavender:  tcell.NewHexColor(0x7287fd),
-	Text:      tcell.NewHexColor(0x303030),
-	Subtext1:  tcell.NewHexColor(0x404040),
-	Subtext0:  tcell.NewHexColor(0x505050),
-	Overlay2:  tcell.NewHexColor(0x606060),
-	Overlay1:  tcell.NewHexColor(0x707070),
-	Overlay0:  tcell.NewHexColor(0x808080),
-	Surface2:  tcell.NewHexColor(0x909090),
-	Surface1:  tcell.NewHexColor(0xa0a0a0),
-	Surface0:  tcell.NewHexColor(0xb0b0b0),
-	Base:      tcell.NewHexColor(0xeff1f5),
-	Mantle:    tcell.NewHexColor(0xe6e9ef),
-	Crust:     tcell.NewHexColor(0xdce0e8),
+	Rosewater: tcell.NewHexColor(0xdc8a78), //#dc8a78
+	Flamingo:  tcell.NewHexColor(0xdd7878), //#dd7878
+	Pink:      tcell.NewHexColor(0xea76cb), //#ea76cb
+	Mauve:     tcell.NewHexColor(0x8839ef), //#8839ef
+	Red:       tcell.NewHexColor(0xd20f39), //#d20f39
+	Maroon:    tcell.NewHexColor(0xe64553), //#e64553
+	Peach:     tcell.NewHexColor(0xfe640b), //#fe640b
+	Yellow:    tcell.NewHexColor(0xdf8e1d), //#df8e1d
+	Green:     tcell.NewHexColor(0x40a02b), //#40a02b
+	Teal:      tcell.NewHexColor(0x179299), //#179299
+	Sky:       tcell.NewHexColor(0x04a5e5), //#04a5e5
+	Sapphire:  tcell.NewHexColor(0x209fb5), //#209fb5
+	Blue:      tcell.NewHexColor(0x1e66f5), //#1e66f5
+	Lavender:  tcell.NewHexColor(0x7287fd), //#7287fd
+	Text:      tcell.NewHexColor(0x303030), //#303030
+	Subtext1:  tcell.NewHexColor(0x404040), //#404040
+	Subtext0:  tcell.NewHexColor(0x505050), //#505050
+	Overlay2:  tcell.NewHexColor(0x606060), //#606060
+	Overlay1:  tcell.NewHexColor(0x707070), //#707070
+	Overlay0:  tcell.NewHexColor(0x808080), //#808080
+	Surface2:  tcell.NewHexColor(0x909090), //#909090
+	Surface1:  tcell.NewHexColor(0xa0a0a0), //#a0a0a0
+	Surface0:  tcell.NewHexColor(0xb0b0b0), //#b0b0b0
+	Base:      tcell.NewHexColor(0xeff1f5), //#eff1f5
+	Mantle:    tcell.NewHexColor(0xe6e9ef), //#e6e9ef
+	Crust:     tcell.NewHexColor(0xdce0e8), //#dce0e8
 }
 
 var CatppuccinFrappe = Theme{
 	Name:      "Frappé",
 	ID:        "catppuccin-frappe",
-	Rosewater: tcell.NewHexColor(0xf2d5cf),
-	Flamingo:  tcell.NewHexColor(0xeebebe),
-	Pink:      tcell.NewHexColor(0xf4b8e4),
-	Mauve:     tcell.NewHexColor(0xca9ee6),
-	Red:       tcell.NewHexColor(0xe78284),
-	Maroon:    tcell.NewHexColor(0xea999c),
-	Peach:     tcell.NewHexColor(0xef9f76),
-	Yellow:    tcell.NewHexColor(0xe5c890),
-	Green:     tcell.NewHexColor(0xa6d189),
-	Teal:      tcell.NewHexColor(0x81c8be),
-	Sky:       tcell.NewHexColor(0x99d1db),
-	Sapphire:  tcell.NewHexColor(0x85c1dc),
-	Blue:      tcell.NewHexColor(0x8caaee),
-	Lavender:  tcell.NewHexColor(0xbabbf1),
-	Text:      tcell.NewHexColor(0xc6d0f5),
-	Subtext1:  tcell.NewHexColor(0xb5bfe2),
-	Subtext0:  tcell.NewHexColor(0xa5adce),
-	Overlay2:  tcell.NewHexColor(0x949cbb),
-	Overlay1:  tcell.NewHexColor(0x838ba7),
-	Overlay0:  tcell.NewHexColor(0x737994),
-	Surface2:  tcell.NewHexColor(0x626880),
-	Surface1:  tcell.NewHexColor(0x51576d),
-	Surface0:  tcell.NewHexColor(0x414559),
-	Base:      tcell.NewHexColor(0x303446),
-	Mantle:    tcell.NewHexColor(0x292c3c),
-	Crust:     tcell.NewHexColor(0x232634),
+	Rosewater: tcell.NewHexColor(0xf2d5cf), //#f2d5cf
+	Flamingo:  tcell.NewHexColor(0xeebebe), //#eebebe
+	Pink:      tcell.NewHexColor(0xf4b8e4), //#f4b8e4
+	Mauve:     tcell.NewHexColor(0xca9ee6), //#ca9ee6
+	Red:       tcell.NewHexColor(0xe78284), //#e78284
+	Maroon:    tcell.NewHexColor(0xea999c), //#ea999c
+	Peach:     tcell.NewHexColor(0xef9f76), //#ef9f76
+	Yellow:    tcell.NewHexColor(0xe5c890), //#e5c890
+	Green:     tcell.NewHexColor(0xa6d189), //#a6d189
+	Teal:      tcell.NewHexColor(0x81c8be), //#81c8be
+	Sky:       tcell.NewHexColor(0x99d1db), //#99d1db
+	Sapphire:  tcell.NewHexColor(0x85c1dc), //#85c1dc
+	Blue:      tcell.NewHexColor(0x8caaee), //#8caaee
+	Lavender:  tcell.NewHexColor(0xbabbf1), //#babbf1
+	Text:      tcell.NewHexColor(0xc6d0f5), //#c6d0f5
+	Subtext1:  tcell.NewHexColor(0xb5bfe2), //#b5bfe2
+	Subtext0:  tcell.NewHexColor(0xa5adce), //#a5adce
+	Overlay2:  tcell.NewHexColor(0x949cbb), //#949cbb
+	Overlay1:  tcell.NewHexColor(0x838ba7), //#838ba7
+	Overlay0:  tcell.NewHexColor(0x737994), //#737994
+	Surface2:  tcell.NewHexColor(0x626880), //#626880
+	Surface1:  tcell.NewHexColor(0x51576d), //#51576d
+	Surface0:  tcell.NewHexColor(0x414559), //#414559
+	Base:      tcell.NewHexColor(0x303446), //#303446
+	Mantle:    tcell.NewHexColor(0x292c3c), //#292c3c
+	Crust:     tcell.NewHexColor(0x232634), //#232634
 }
 
 var CatppuccinMacchiato = Theme{
 	Name:      "Macchiato",
 	ID:        "catppuccin-macchiato",
-	Rosewater: tcell.NewHexColor(0xf4dbd6),
-	Flamingo:  tcell.NewHexColor(0xf0c6c6),
-	Pink:      tcell.NewHexColor(0xf5bde6),
-	Mauve:     tcell.NewHexColor(0xc6a0f6),
-	Red:       tcell.NewHexColor(0xed8796),
-	Maroon:    tcell.NewHexColor(0xee99a0),
-	Peach:     tcell.NewHexColor(0xf5a97f),
-	Yellow:    tcell.NewHexColor(0xeed49f),
-	Green:     tcell.NewHexColor(0xa6da95),
-	Teal:      tcell.NewHexColor(0x8bd5ca),
-	Sky:       tcell.NewHexColor(0x91d7e3),
-	Sapphire:  tcell.NewHexColor(0x7dc4e4),
-	Blue:      tcell.NewHexColor(0x8aadf4),
-	Lavender:  tcell.NewHexColor(0xb7bdf8),
-	Text:      tcell.NewHexColor(0xcad3f5),
-	Subtext1:  tcell.NewHexColor(0xb8c0e0),
-	Subtext0:  tcell.NewHexColor(0xa5adcb),
-	Overlay2:  tcell.NewHexColor(0x939ab7),
-	Overlay1:  tcell.NewHexColor(0x8087a2),
-	Overlay0:  tcell.NewHexColor(0x6e738d),
-	Surface2:  tcell.NewHexColor(0x5b6078),
-	Surface1:  tcell.NewHexColor(0x494d64),
-	Surface0:  tcell.NewHexColor(0x363a4f),
-	Base:      tcell.NewHexColor(0x24273a),
-	Mantle:    tcell.NewHexColor(0x1e2030),
-	Crust:     tcell.NewHexColor(0x181926),
+	Rosewater: tcell.NewHexColor(0xf4dbd6), //#f4dbd6
+	Flamingo:  tcell.NewHexColor(0xf0c6c6), //#f0c6c6
+	Pink:      tcell.NewHexColor(0xf5bde6), //#f5bde6
+	Mauve:     tcell.NewHexColor(0xc6a0f6), //#c6a0f6
+	Red:       tcell.NewHexColor(0xed8796), //#ed8796
+	Maroon:    tcell.NewHexColor(0xee99a0), //#ee99a0
+	Peach:     tcell.NewHexColor(0xf5a97f), //#f5a97f
+	Yellow:    tcell.NewHexColor(0xeed49f), //#eed49f
+	Green:     tcell.NewHexColor(0xa6da95), //#a6da95
+	Teal:      tcell.NewHexColor(0x8bd5ca), //#8bd5ca
+	Sky:       tcell.NewHexColor(0x91d7e3), //#91d7e3
+	Sapphire:  tcell.NewHexColor(0x7dc4e4), //#7dc4e4
+	Blue:      tcell.NewHexColor(0x8aadf4), //#8aadf4
+	Lavender:  tcell.NewHexColor(0xb7bdf8), //#b7bdf8
+	Text:      tcell.NewHexColor(0xcad3f5), //#cad3f5
+	Subtext1:  tcell.NewHexColor(0xb8c0e0), //#b8c0e0
+	Subtext0:  tcell.NewHexColor(0xa5adcb), //#a5adcb
+	Overlay2:  tcell.NewHexColor(0x939ab7), //#939ab7
+	Overlay1:  tcell.NewHexColor(0x8087a2), //#8087a2
+	Overlay0:  tcell.NewHexColor(0x6e738d), //#6e738d
+	Surface2:  tcell.NewHexColor(0x5b6078), //#5b6078
+	Surface1:  tcell.NewHexColor(0x494d64), //#494d64
+	Surface0:  tcell.NewHexColor(0x363a4f), //#363a4f
+	Base:      tcell.NewHexColor(0x24273a), //#24273a
+	Mantle:    tcell.NewHexColor(0x1e2030), //#1e2030
+	Crust:     tcell.NewHexColor(0x181926), //#181926
 }
 
 var CatppuccinMocha = Theme{
 	Name:      "Mocha",
 	ID:        "catppuccin-mocha",
-	Rosewater: tcell.NewHexColor(0xf5e0dc),
-	Flamingo:  tcell.NewHexColor(0xf2cdcd),
-	Pink:      tcell.NewHexColor(0xf5c2e7),
-	Mauve:     tcell.NewHexColor(0xcba6f7),
-	Red:       tcell.NewHexColor(0xf38ba8),
-	Maroon:    tcell.NewHexColor(0xeba0ac),
-	Peach:     tcell.NewHexColor(0xfab387),
-	Yellow:    tcell.NewHexColor(0xf9e2af),
-	Green:     tcell.NewHexColor(0xa6e3a1),
-	Teal:      tcell.NewHexColor(0x94e2d5),
-	Sky:       tcell.NewHexColor(0x89dceb),
-	Sapphire:  tcell.NewHexColor(0x74c7ec),
-	Blue:      tcell.NewHexColor(0x89b4fa),
-	Lavender:  tcell.NewHexColor(0xb4befe),
-	Text:      tcell.NewHexColor(0xcdd6f4),
-	Subtext1:  tcell.NewHexColor(0xbac2de),
-	Subtext0:  tcell.NewHexColor(0xa6adc8),
-	Overlay2:  tcell.NewHexColor(0x9399b2),
-	Overlay1:  tcell.NewHexColor(0x7f849c),
-	Overlay0:  tcell.NewHexColor(0x6c7086),
-	Surface2:  tcell.NewHexColor(0x585b70),
-	Surface1:  tcell.NewHexColor(0x45475a),
-	Surface0:  tcell.NewHexColor(0x313244),
-	Base:      tcell.NewHexColor(0x1e1e2e),
-	Mantle:    tcell.NewHexColor(0x181825),
-	Crust:     tcell.NewHexColor(0x11111b),
+	Rosewater: tcell.NewHexColor(0xf5e0dc), //#f5e0dc
+	Flamingo:  tcell.NewHexColor(0xf2cdcd), //#f2cdcd
+	Pink:      tcell.NewHexColor(0xf5c2e7), //#f5c2e7
+	Mauve:     tcell.NewHexColor(0xcba6f7), //#f38ba8
+	Red:       tcell.NewHexColor(0xf38ba8), //#f38ba8
+	Maroon:    tcell.NewHexColor(0xeba0ac), //#eba0ac
+	Peach:     tcell.NewHexColor(0xfab387), //#f9e2af
+	Yellow:    tcell.NewHexColor(0xf9e2af), //#f9e2af
+	Green:     tcell.NewHexColor(0xa6e3a1), //#a6e3a1
+	Teal:      tcell.NewHexColor(0x94e2d5), //#94e2d5
+	Sky:       tcell.NewHexColor(0x89dceb), //#89dceb
+	Sapphire:  tcell.NewHexColor(0x74c7ec), //#74c7ec
+	Blue:      tcell.NewHexColor(0x89b4fa), //#89b4fa
+	Lavender:  tcell.NewHexColor(0xb4befe), //#b4befe
+	Text:      tcell.NewHexColor(0xcdd6f4), //#cdd6f4
+	Subtext1:  tcell.NewHexColor(0xbac2de), //#bac2de
+	Subtext0:  tcell.NewHexColor(0xa6adc8), //#a6adc8
+	Overlay2:  tcell.NewHexColor(0x9399b2), //#9399b2
+	Overlay1:  tcell.NewHexColor(0x7f849c), //#7f849c
+	Overlay0:  tcell.NewHexColor(0x6c7086), //#6c7086
+	Surface2:  tcell.NewHexColor(0x585b70), //#585b70
+	Surface1:  tcell.NewHexColor(0x45475a), //#45475a
+	Surface0:  tcell.NewHexColor(0x313244), //#313244
+	Base:      tcell.NewHexColor(0x1e1e2e), //#1e1e2e
+	Mantle:    tcell.NewHexColor(0x181825), //#181825
+	Crust:     tcell.NewHexColor(0x11111b), //#11111b
 }
 
 func (t *Theme) GetFocusedBorder() tcell.Color {
