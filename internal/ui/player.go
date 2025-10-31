@@ -26,7 +26,9 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 		a.stopProgress = nil
 	}
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
-		a.mpvProcess.Process.Kill()
+		if KillError := a.mpvProcess.Process.Kill(); KillError == nil {
+			fmt.Printf("Error: %s", KillError)
+		}
 		a.mpvProcess = nil
 	}
 	a.mu.Unlock()
@@ -49,10 +51,10 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	args = append(args, track.URL)
 
 	cmd := exec.Command("mpv", args...)
-	
+
 	var stderrBuf bytes.Buffer
 	cmd.Stderr = &stderrBuf
-	
+
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
@@ -95,7 +97,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 		if err != nil {
 			a.isPlaying = false
 			a.mu.Unlock()
-			
+
 			stderrOutput := stderrBuf.String()
 			if strings.Contains(stderrOutput, "403") || strings.Contains(stderrOutput, "HTTP error 403") {
 				a.app.QueueUpdateDraw(func() {
@@ -201,10 +203,10 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	args = append(args, track.URL)
 
 	cmd := exec.Command("mpv", args...)
-	
+
 	var stderrBuf bytes.Buffer
 	cmd.Stderr = &stderrBuf
-	
+
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
@@ -300,7 +302,9 @@ func (a *SimpleApp) togglePause() {
 func (a *SimpleApp) stopPlayback() {
 	a.mu.Lock()
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
-		a.mpvProcess.Process.Kill()
+		if KillError := a.mpvProcess.Process.Kill(); KillError == nil {
+			fmt.Printf("Error: %s", KillError)
+		}
 		a.mpvProcess = nil
 	}
 	a.isPlaying = false

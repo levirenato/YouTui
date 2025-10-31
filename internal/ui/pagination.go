@@ -51,11 +51,7 @@ func (p *Pagination) PrevPage() bool {
 
 func (p *Pagination) GetPageItems() (start, end int) {
 	start = p.currentPage * p.itemsPerPage
-	end = start + p.itemsPerPage
-
-	if end > p.totalItems {
-		end = p.totalItems
-	}
+	end = min(start+p.itemsPerPage, p.totalItems)
 
 	return start, end
 }

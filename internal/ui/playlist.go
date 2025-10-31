@@ -101,9 +101,10 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 
 	a.playlistTracks[from], a.playlistTracks[to] = a.playlistTracks[to], a.playlistTracks[from]
 
-	if a.currentTrack == from {
+	switch a.currentTrack {
+	case from:
 		a.currentTrack = to
-	} else if a.currentTrack == to {
+	case to:
 		a.currentTrack = from
 	}
 

@@ -2,10 +2,9 @@
 package ui
 
 import (
-	"context"
+	"fmt"
 	"os/exec"
 	"sync"
-	"time"
 
 	"github.com/levirenato/YouTui/internal/config"
 	"github.com/rivo/tview"
@@ -92,16 +91,11 @@ type SimpleApp struct {
 	playlistMode PlaylistMode
 	playMode     PlayMode
 
-	progressTicker *time.Ticker
-	stopProgress   chan bool
+	stopProgress chan bool
 
 	skipAutoPlay bool
 
-	thumbCache           *ThumbnailCache
-	detailsLoadingIdx    int
-	detailsLoadingMutex  sync.Mutex
-	detailsCancelFunc    context.CancelFunc
-	detailsDebounceTimer *time.Timer
+	thumbCache *ThumbnailCache
 
 	theme    *Theme
 	language Language
@@ -180,7 +174,9 @@ func (a *SimpleApp) cleanup() {
 	}
 
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
-		a.mpvProcess.Process.Kill()
+		if KillError := a.mpvProcess.Process.Kill(); KillError == nil {
+			fmt.Printf("Error: %s", KillError)
+		}
 		a.mpvProcess = nil
 	}
 	a.isPlaying = false

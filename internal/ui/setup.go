@@ -307,7 +307,10 @@ func (a *SimpleApp) cycleTheme() {
 	cfg, _ := config.LoadConfig()
 	cfg.Theme.Active = a.theme.ID
 	cfg.Theme.CustomPath = ""
-	config.SaveConfig(cfg)
+	err := config.SaveConfig(cfg)
+	if err != nil {
+		fmt.Printf("Erro %s", err)
+	}
 
 	a.applyTheme()
 	a.refreshUI()

@@ -305,7 +305,10 @@ func parseHexColor(hex string) tcell.Color {
 
 	var r, g, b uint8
 	if len(hex) == 6 {
-		fmt.Sscanf(hex, "%02x%02x%02x", &r, &g, &b)
+		_, err := fmt.Sscanf(hex, "%02x%02x%02x", &r, &g, &b)
+		if err != nil {
+			fmt.Printf("error: %s", err)
+		}
 		return tcell.NewRGBColor(int32(r), int32(g), int32(b))
 	}
 
@@ -314,5 +317,5 @@ func parseHexColor(hex string) tcell.Color {
 
 func colorTag(c tcell.Color) string {
 	// tcell v2 tem .Hex()
-	return fmt.Sprintf("#%06x", c.Hex()) // ex: "#855511"
+	return fmt.Sprintf("#%06x", c.Hex())
 }

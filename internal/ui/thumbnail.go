@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/nfnt/resize"
@@ -18,7 +17,6 @@ import (
 
 type ThumbnailCache struct {
 	cacheDir string
-	mu       sync.RWMutex
 }
 
 func NewThumbnailCache() (*ThumbnailCache, error) {
@@ -28,7 +26,7 @@ func NewThumbnailCache() (*ThumbnailCache, error) {
 	}
 
 	cacheDir := filepath.Join(homeDir, ".cache", "youtui", "thumbnails")
-	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +59,10 @@ func (tc *ThumbnailCache) downloadImageWithContext(ctx context.Context, url stri
 	if err != nil {
 		return nil, fmt.Errorf("download failed: %w", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("http status: %d", resp.StatusCode)
@@ -89,7 +90,11 @@ func (tc *ThumbnailCache) GetThumbnailImageWithContext(ctx context.Context, url 
 	if _, statErr := os.Stat(cachePath); statErr == nil {
 		f, err := os.Open(cachePath)
 		if err == nil {
-			defer f.Close()
+
+			defer func() {
+				_ = f.Close()
+			}()
+
 			img, _, err := image.Decode(f)
 			if err == nil {
 				return img, nil
@@ -103,6 +108,7 @@ func (tc *ThumbnailCache) GetThumbnailImageWithContext(ctx context.Context, url 
 	}
 
 	if err := tc.saveImageToCache(img, cachePath); err != nil {
+		fmt.Printf("error: %s", err)
 	}
 
 	return img, nil
@@ -113,7 +119,10 @@ func (tc *ThumbnailCache) saveImageToCache(img image.Image, cachePath string) er
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	resized := resize.Thumbnail(100, 100, img, resize.Lanczos3)
 
