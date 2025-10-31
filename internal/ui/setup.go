@@ -2,13 +2,17 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/levirenato/YouTui/internal/config"
+	"github.com/levirenato/YouTui/internal/search"
 	"github.com/rivo/tview"
 )
 
 func (a *SimpleApp) setupUI() {
+	a.initLanguageFromConfig()
+
 	a.setupSearchComponents()
 	a.setupPlaylistComponent()
 	a.setupDetailsComponent()
@@ -276,9 +280,9 @@ func (a *SimpleApp) cycleLanguage() {
 	}
 
 	nextIdx := (currentIdx + 1) % len(languages)
-	a.language = languages[nextIdx]
-	a.strings = GetStrings(a.language)
+	nextLang := languages[nextIdx]
 
+	a.applyLanguage(nextLang)
 	a.refreshUI()
 
 	langName := GetLanguageName(a.language)
@@ -380,4 +384,46 @@ func (a *SimpleApp) refreshUI() {
 	a.updatePlayerInfo()
 
 	a.app.SetRoot(a.configModal, true)
+}
+
+func (a *SimpleApp) initLanguageFromConfig() {
+	cfg, _ := config.LoadConfig()
+
+	lang := parseLanguage(cfg.UI.Language)
+	if lang == "" {
+		lang = LanguagePT
+	}
+
+	a.applyLanguage(lang)
+}
+
+func parseLanguage(s string) Language {
+	s = strings.ToLower(strings.TrimSpace(s))
+	switch {
+	case s == "en", strings.HasPrefix(s, "en-"), strings.HasPrefix(s, "en_"):
+		return LanguageEN
+	case s == "pt", strings.HasPrefix(s, "pt-"), strings.HasPrefix(s, "pt_"), s == "br":
+		return LanguagePT
+	default:
+		return LanguagePT
+	}
+}
+
+func (a *SimpleApp) applyLanguage(lang Language) {
+	a.language = lang
+	a.strings = GetStrings(lang)
+
+	cfg, _ := config.LoadConfig()
+	cfg.UI.Language = string(lang)
+	_ = config.SaveConfig(cfg)
+
+	search.SetTexts(search.Texts{
+		EmptyQuery:       a.strings.EmptyQuery,
+		NoResultsFor:     a.strings.NoResultsFor,
+		YtDlpNotFound:    a.strings.YtDlpNotFound,
+		YtDlpStartFailed: a.strings.YtDlpStartFailed,
+		YtDlpError:       a.strings.YtDlpError,
+		UnknownDate:      a.strings.UnknownDate,
+		NoDescription:    a.strings.NoDescription,
+	})
 }

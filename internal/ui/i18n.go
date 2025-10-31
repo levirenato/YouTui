@@ -107,6 +107,12 @@ type Strings struct {
 	HelpIconsText      string
 
 	ConfigText string
+
+	EmptyQuery       string
+	NoResultsFor     string
+	YtDlpNotFound    string
+	YtDlpStartFailed string
+	YtDlpError       string
 }
 
 var translations = map[Language]Strings{
@@ -210,6 +216,12 @@ var translations = map[Language]Strings{
 		HelpIconsText:      "  󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório",
 
 		ConfigText: "⚙️  CONFIGURAÇÕES\n\nEscolha uma opção abaixo para configurar o YouTui.\nUse as setas ←/→ para navegar e Enter para selecionar.",
+
+		EmptyQuery:       "Consulta vazia",
+		NoResultsFor:     "Nenhum resultado para: %q",
+		YtDlpNotFound:    "yt-dlp não encontrado no PATH. Instale com 'pipx install yt-dlp' ou 'pip install --user yt-dlp'",
+		YtDlpStartFailed: "Falha ao iniciar yt-dlp",
+		YtDlpError:       "Erro do yt-dlp",
 	},
 
 	LanguageEN: {
@@ -312,6 +324,12 @@ var translations = map[Language]Strings{
 		HelpIconsText:      "  󰑗 No Repeat  󰑘 Repeat One  󰑖 Repeat All   Shuffle",
 
 		ConfigText: "⚙️  SETTINGS\n\nChoose an option below to configure YouTui.\nUse ←/→ arrows to navigate and Enter to select.",
+
+		EmptyQuery:       "Empty query",
+		NoResultsFor:     "No results for: %q",
+		YtDlpNotFound:    "yt-dlp not found in PATH. Install via 'pipx install yt-dlp' or 'pip install --user yt-dlp'",
+		YtDlpStartFailed: "Failed to start yt-dlp",
+		YtDlpError:       "yt-dlp error",
 	},
 }
 

@@ -55,8 +55,9 @@ type ytdlpItem struct {
 }
 
 func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
+	t := getTexts()
 	if strings.TrimSpace(q) == "" {
-		return nil, errors.New("consulta vazia")
+		return nil, errors.New(t.EmptyQuery)
 	}
 
 	N := limit
@@ -88,9 +89,9 @@ func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
 
 	if err := cmd.Start(); err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
-			return nil, fmt.Errorf("yt-dlp não encontrado no PATH. Instale com 'pipx install yt-dlp' ou 'pip install --user yt-dlp'")
+			return nil, fmt.Errorf("%s", t.YtDlpNotFound)
 		}
-		return nil, fmt.Errorf("falha ao iniciar yt-dlp: %w", err)
+		return nil, fmt.Errorf("%s: %w", t.YtDlpStartFailed, err)
 	}
 
 	sc := bufio.NewScanner(stdout)
@@ -122,7 +123,7 @@ func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
 			thumb = fmt.Sprintf("https://i.ytimg.com/vi/%s/hqdefault.jpg", it.ID)
 		}
 
-		publishedAt := "Data desconhecida"
+		publishedAt := t.UnknownDate
 		if len(it.UploadDate) == 8 {
 			year := it.UploadDate[0:4]
 			month := it.UploadDate[4:6]
@@ -132,7 +133,7 @@ func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
 
 		description := it.Description
 		if description == "" {
-			description = "Sem descrição disponível"
+			description = t.NoDescription
 		}
 
 		results = append(results, Result{
@@ -157,14 +158,16 @@ func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("nenhum resultado para: %q", q)
+		return nil, fmt.Errorf("%s: %q", t.NoResultsFor, q)
 	}
 	return results, nil
 }
 
 func GetVideoDetails(ctx context.Context, url string) (*Result, error) {
+	t := getTexts()
+
 	if url == "" {
-		return nil, errors.New("URL vazia")
+		return nil, errors.New(t.EmptyQuery)
 	}
 
 	args := []string{
@@ -195,7 +198,7 @@ func GetVideoDetails(ctx context.Context, url string) (*Result, error) {
 		thumb = fmt.Sprintf("https://i.ytimg.com/vi/%s/hqdefault.jpg", it.ID)
 	}
 
-	publishedAt := "Data desconhecida"
+	publishedAt := t.UnknownDate
 	if len(it.UploadDate) == 8 {
 		year := it.UploadDate[0:4]
 		month := it.UploadDate[4:6]
@@ -205,7 +208,7 @@ func GetVideoDetails(ctx context.Context, url string) (*Result, error) {
 
 	description := it.Description
 	if description == "" {
-		description = "Sem descrição disponível"
+		description = t.NoDescription
 	}
 
 	url = it.WebpageURL
