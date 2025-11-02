@@ -93,5 +93,5 @@ func ClearState() error {
 }
 
 func getCurrentTimestamp() string {
-	return filepath.Base(time.Now().Format("2006-01-02 15:04:05")) // Placeholder - você pode usar time.Now().Format()
+	return filepath.Base(time.Now().Format("2006-01-02 15:04:05")) // Placeholder - u can use time.Now().Format()
 }

@@ -154,7 +154,7 @@ func NewSimpleApp() *SimpleApp {
 		currentVersion, _, needsUpdate := CheckYtDlpVersion()
 		if needsUpdate {
 			app.app.QueueUpdateDraw(func() {
-				app.setStatus(app.theme.Yellow, "⚠ yt-dlp desatualizado ("+currentVersion+"). Atualize: sudo yt-dlp -U")
+				app.setStatus(app.theme.Yellow, "⚠"+app.strings.ytDlpOutdated+"("+currentVersion+")")
 			})
 		}
 	}()
@@ -286,7 +286,7 @@ func (a *SimpleApp) RestoreState() error {
 		a.updatePlaylistFooter()
 
 		if len(state.Playlist) > 0 || len(state.SearchResults) > 0 {
-			a.setStatus(a.theme.Green, "✓ Estado restaurado com sucesso!")
+			a.setStatus(a.theme.Green, a.strings.stateRestored)
 		}
 	})
 

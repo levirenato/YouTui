@@ -36,7 +36,6 @@ func NewCustomList(theme *Theme) *CustomList {
 	wrapper := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(container, 0, 1, false)
-
 	wrapper.SetBackgroundColor(theme.Base)
 
 	list := &CustomList{
@@ -70,12 +69,10 @@ func NewCustomList(theme *Theme) *CustomList {
 		case tcell.KeyTab, tcell.KeyBacktab:
 			return event
 		}
-
 		return event
 	})
 
 	list.renderVisibleItems()
-
 	return list
 }
 
@@ -86,14 +83,12 @@ func (c *CustomList) AddItem(track Track, index int) {
 	thumb := tview.NewImage().
 		SetColors(tview.TrueColor).
 		SetDithering(tview.DitheringFloydSteinberg)
-
 	thumb.SetBackgroundColor(c.theme.Base)
 
 	info := tview.NewTextView().
 		SetDynamicColors(true).
 		SetText(formatItemInfo(track, index, c.theme)).
 		SetTextAlign(tview.AlignLeft)
-
 	info.SetBackgroundColor(c.theme.Base)
 	info.SetTextColor(c.theme.Text)
 
@@ -101,7 +96,6 @@ func (c *CustomList) AddItem(track Track, index int) {
 		SetDirection(tview.FlexColumn).
 		AddItem(thumb, 20, 0, false).
 		AddItem(info, 0, 1, false)
-
 	itemFlex.SetBackgroundColor(c.theme.Base)
 
 	item := &CustomListItem{
@@ -113,14 +107,12 @@ func (c *CustomList) AddItem(track Track, index int) {
 	}
 
 	c.items = append(c.items, item)
-
 	c.renderVisibleItems()
 }
 
 func (c *CustomList) SetThumbnail(index int, img image.Image) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if index >= 0 && index < len(c.items) {
 		c.items[index].thumbnail.SetImage(img)
 	}
@@ -129,7 +121,6 @@ func (c *CustomList) SetThumbnail(index int, img image.Image) {
 func (c *CustomList) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	c.container.Clear()
 	c.items = []*CustomListItem{}
 	c.selectedIndex = 0
@@ -139,12 +130,15 @@ func (c *CustomList) Clear() {
 func (c *CustomList) renderVisibleItems() {
 	c.container.Clear()
 
-	_, _, _, height := c.GetInnerRect()
-	if height < 3 {
-		height = 30
+	_, _, _, wrapperHeight := c.GetInnerRect()
+
+	availableHeight := wrapperHeight
+	if availableHeight <= 0 {
+		availableHeight = 10
 	}
 
-	itemsPerPage := max(height/3, 1)
+	const itemHeight = 3
+	itemsPerPage := max(availableHeight/itemHeight, 1)
 
 	c.visibleHeight = itemsPerPage
 
@@ -154,12 +148,17 @@ func (c *CustomList) renderVisibleItems() {
 		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
 		c.container.AddItem(spacer, 0, 1, false)
 	} else {
+		itemsRendered := 0
 		for i := c.visibleStart; i < end; i++ {
-			c.container.AddItem(c.items[i].flex, 3, 0, false)
+			c.container.AddItem(c.items[i].flex, itemHeight, 0, false)
+			itemsRendered++
 		}
 
-		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
-		c.container.AddItem(spacer, 0, 1, false)
+		remainingHeight := availableHeight - (itemsRendered * itemHeight)
+		if remainingHeight > 0 {
+			spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
+			c.container.AddItem(spacer, remainingHeight, 0, false)
+		}
 	}
 
 	c.updateSelection()
@@ -170,7 +169,6 @@ func (c *CustomList) scrollToSelection() {
 		c.visibleStart = c.selectedIndex - c.visibleHeight + 1
 		c.renderVisibleItems()
 	}
-
 	if c.selectedIndex < c.visibleStart {
 		c.visibleStart = c.selectedIndex
 		c.renderVisibleItems()
@@ -180,7 +178,6 @@ func (c *CustomList) scrollToSelection() {
 func (c *CustomList) SelectNext() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if c.selectedIndex < len(c.items)-1 {
 		c.selectedIndex++
 		c.scrollToSelection()
@@ -191,7 +188,6 @@ func (c *CustomList) SelectNext() {
 func (c *CustomList) SelectPrevious() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if c.selectedIndex > 0 {
 		c.selectedIndex--
 		c.scrollToSelection()
@@ -208,7 +204,6 @@ func (c *CustomList) GetCurrentItem() int {
 func (c *CustomList) SetCurrentIndex(idx int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if idx >= 0 && idx < len(c.items) {
 		c.selectedIndex = idx
 		c.scrollToSelection()
@@ -219,7 +214,6 @@ func (c *CustomList) SetCurrentIndex(idx int) {
 func (c *CustomList) GetCurrentTrack() *Track {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if c.selectedIndex >= 0 && c.selectedIndex < len(c.items) {
 		return &c.items[c.selectedIndex].track
 	}
@@ -270,7 +264,6 @@ func (c *CustomList) SetBorderColor(color tcell.Color) *CustomList {
 func (c *CustomList) SetPlayingIndex(idx int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	c.playingIndex = idx
 	c.updateSelection()
 }
@@ -278,12 +271,10 @@ func (c *CustomList) SetPlayingIndex(idx int) {
 func formatItemInfo(track Track, index int, theme *Theme) string {
 	icons := []string{"♪", "♫", "♬"}
 	icon := icons[index%len(icons)]
-
 	title := track.Title
 	if len(title) > 50 {
 		title = title[:47] + "..."
 	}
-
 	return icon + " [" + colorTag(theme.Yellow) + "::b]" + title + "[-:-:-]\n" +
 		"[" + colorTag(theme.Green) + "]⏱ " + track.Duration + "[-] " +
 		"[" + colorTag(theme.Sapphire) + "]• " + track.Author + "[-]"
@@ -292,12 +283,10 @@ func formatItemInfo(track Track, index int, theme *Theme) string {
 func formatItemInfoPlain(track Track, index int) string {
 	icons := []string{"♪", "♫", "♬"}
 	icon := icons[index%len(icons)]
-
 	title := track.Title
 	if len(title) > 50 {
 		title = title[:47] + "..."
 	}
-
 	return icon + " " + title + "\n" +
 		"⏱ " + track.Duration + " • " + track.Author
 }
@@ -305,18 +294,15 @@ func formatItemInfoPlain(track Track, index int) string {
 func (c *CustomList) SetTheme(theme *Theme) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	c.theme = theme
 	c.SetBorderColor(theme.Surface0)
 	c.SetBackgroundColor(theme.Base)
 	c.container.SetBackgroundColor(theme.Base)
-
 	for _, item := range c.items {
 		item.flex.SetBackgroundColor(theme.Base)
 		item.thumbnail.SetBackgroundColor(theme.Base)
 		item.info.SetBackgroundColor(theme.Base)
 		item.info.SetTextColor(theme.Text)
 	}
-
 	c.renderVisibleItems()
 }

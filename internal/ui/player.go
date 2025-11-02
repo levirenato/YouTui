@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand/v2"
+	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -22,12 +24,18 @@ func (a *SimpleApp) setStatusf(color tcell.Color, format string, args ...any) {
 func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.mu.Lock()
 	if a.stopProgress != nil {
-		close(a.stopProgress)
+		select {
+		case <-a.stopProgress:
+		default:
+			close(a.stopProgress)
+		}
 		a.stopProgress = nil
 	}
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
-		if KillError := a.mpvProcess.Process.Kill(); KillError == nil {
-			fmt.Printf("Error: %s", KillError)
+		if err := a.mpvProcess.Process.Signal(os.Signal(syscall.Signal(0))); err == nil {
+			if err := a.mpvProcess.Process.Kill(); err != nil {
+				fmt.Printf("Warning %s %v", a.strings.warnFailedKillPrevMpv, err)
+			}
 		}
 		a.mpvProcess = nil
 	}
@@ -49,7 +57,6 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	a.mu.Unlock()
 
 	args = append(args, track.URL)
-
 	cmd := exec.Command("mpv", args...)
 
 	var stderrBuf bytes.Buffer
@@ -57,7 +64,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
+			a.setStatusf(a.theme.Red, "❌%s %v", a.strings.errorStartMpv, err)
 		})
 		return
 	}
@@ -83,9 +90,8 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 	a.startProgressUpdater()
 
-	go func(expectedCmd *exec.Cmd) {
+	go func(expectedCmd *exec.Cmd, trackCopy Track, idxCopy int) {
 		err := expectedCmd.Wait()
-
 		time.Sleep(500 * time.Millisecond)
 
 		a.mu.Lock()
@@ -102,12 +108,12 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 			if strings.Contains(stderrOutput, "403") || strings.Contains(stderrOutput, "HTTP error 403") {
 				a.app.QueueUpdateDraw(func() {
 					a.updatePlayerInfo()
-					a.setStatus(a.theme.Red, "❌ YouTube bloqueou (403). Atualize yt-dlp: sudo yt-dlp -U")
+					a.setStatus(a.theme.Red, "❌"+a.strings.youtubeBlocked)
 				})
 			} else {
 				a.app.QueueUpdateDraw(func() {
 					a.updatePlayerInfo()
-					a.setStatusf(a.theme.Red, "❌ "+a.strings.MpvError, err)
+					a.setStatusf(a.theme.Red, "❌"+a.strings.MpvError, err)
 				})
 			}
 			return
@@ -127,8 +133,8 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 		switch mode {
 		case ModeRepeatOne:
 			shouldPlayNext = true
-			nextTrack = track
-			nextIdx = idx
+			nextTrack = trackCopy
+			nextIdx = idxCopy
 
 		case ModeShuffle:
 			if len(a.playlistTracks) > 0 {
@@ -137,7 +143,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 				} else {
 					for {
 						nextIdx = rand.IntN(len(a.playlistTracks))
-						if nextIdx != idx {
+						if nextIdx != idxCopy || len(a.playlistTracks) == 1 {
 							break
 						}
 					}
@@ -148,7 +154,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 
 		case ModeRepeatAll, ModeNormal:
 			if len(a.playlistTracks) > 0 {
-				next := idx + 1
+				next := idxCopy + 1
 				if next >= len(a.playlistTracks) {
 					if mode == ModeRepeatAll {
 						next = 0
@@ -165,6 +171,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 				}
 			}
 		}
+
 		a.mu.Unlock()
 
 		if shouldPlayNext {
@@ -179,7 +186,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 				a.setStatus(a.theme.Yellow, a.strings.PlaylistFinished)
 			})
 		}
-	}(cmd)
+	}(cmd, track, idx)
 }
 
 func (a *SimpleApp) playTrackDirect(track Track) {
@@ -201,7 +208,6 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	a.mu.Unlock()
 
 	args = append(args, track.URL)
-
 	cmd := exec.Command("mpv", args...)
 
 	var stderrBuf bytes.Buffer
@@ -209,7 +215,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 
 	if err := cmd.Start(); err != nil {
 		a.app.QueueUpdateDraw(func() {
-			a.setStatusf(a.theme.Red, "❌ Erro mpv: %v", err)
+			a.setStatusf(a.theme.Red, "❌%s %v", a.strings.errorStartMpv, err)
 		})
 		return
 	}
@@ -251,7 +257,7 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 			if err != nil {
 				stderrOutput := stderrBuf.String()
 				if strings.Contains(stderrOutput, "403") || strings.Contains(stderrOutput, "HTTP error 403") {
-					a.setStatus(a.theme.Red, "❌ YouTube bloqueou (403). Atualize yt-dlp: sudo yt-dlp -U")
+					a.setStatus(a.theme.Red, "❌"+a.strings.youtubeBlocked)
 				} else {
 					a.setStatusf(a.theme.Red, "❌ "+a.strings.MpvError, err)
 				}
@@ -270,16 +276,23 @@ func (a *SimpleApp) togglePause() {
 
 	if !isPlaying || socket == "" {
 		a.app.QueueUpdateDraw(func() {
-			a.setStatusf(a.theme.Red, "⚠ "+a.strings.StateError, isPlaying, socket)
+			a.setStatus(a.theme.Yellow, a.strings.nothingPlaying)
 		})
 		return
 	}
 
-	cmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '{ "command": ["cycle", "pause"] }' | socat - "%s" 2>&1`, socket))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("echo '{ \"command\": [\"cycle\", \"pause\"] }' | socat - \"%s\" 2>&1", socket))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		if strings.Contains(string(output), a.strings.socatCmdNotFound) {
+			a.app.QueueUpdateDraw(func() {
+				a.setStatus(a.theme.Red, "❌"+a.strings.socatNotInstalled)
+			})
+			return
+		}
+
 		a.app.QueueUpdateDraw(func() {
-			a.setStatusf(a.theme.Red, "❌ "+a.strings.Error, err, string(output))
+			a.setStatusf(a.theme.Red, "❌"+a.strings.errorPause+"%v", err)
 		})
 		return
 	}
@@ -302,8 +315,8 @@ func (a *SimpleApp) togglePause() {
 func (a *SimpleApp) stopPlayback() {
 	a.mu.Lock()
 	if a.mpvProcess != nil && a.mpvProcess.Process != nil {
-		if KillError := a.mpvProcess.Process.Kill(); KillError == nil {
-			fmt.Printf("Error: %s", KillError)
+		if err := a.mpvProcess.Process.Kill(); err != nil {
+			fmt.Print("Warning:", a.strings.warnFailedKillMpv, err)
 		}
 		a.mpvProcess = nil
 	}
@@ -325,9 +338,10 @@ func (a *SimpleApp) playNext() {
 	currentIsPlaying := a.isPlaying
 	currentTrack := a.currentTrack
 	playlistLen := len(a.playlistTracks)
+	mode := a.playlistMode
+	a.mu.Unlock()
 
 	if playlistLen == 0 {
-		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.PlaylistEmpty)
 		})
@@ -335,7 +349,6 @@ func (a *SimpleApp) playNext() {
 	}
 
 	if !currentIsPlaying {
-		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.NothingPlaying)
 		})
@@ -343,9 +356,11 @@ func (a *SimpleApp) playNext() {
 	}
 
 	if currentTrack < 0 {
+		a.mu.Lock()
 		track := a.playlistTracks[0]
 		a.skipAutoPlay = true
 		a.mu.Unlock()
+
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Sapphire, "▶ "+a.strings.EnteringPlaylist)
 		})
@@ -354,8 +369,7 @@ func (a *SimpleApp) playNext() {
 	}
 
 	var next int
-
-	if a.playlistMode == ModeShuffle {
+	if mode == ModeShuffle {
 		if playlistLen == 1 {
 			next = 0
 		} else {
@@ -369,10 +383,9 @@ func (a *SimpleApp) playNext() {
 	} else {
 		next = currentTrack + 1
 		if next >= playlistLen {
-			if a.playlistMode == ModeRepeatAll {
+			if mode == ModeRepeatAll {
 				next = 0
 			} else {
-				a.mu.Unlock()
 				a.app.QueueUpdateDraw(func() {
 					a.setStatus(a.theme.Yellow, a.strings.AlreadyLastSong)
 				})
@@ -381,6 +394,7 @@ func (a *SimpleApp) playNext() {
 		}
 	}
 
+	a.mu.Lock()
 	track := a.playlistTracks[next]
 	a.skipAutoPlay = true
 	a.mu.Unlock()
@@ -394,29 +408,33 @@ func (a *SimpleApp) playNext() {
 
 func (a *SimpleApp) playPrevious() {
 	a.mu.Lock()
+	currentTrack := a.currentTrack
 	playlistLen := len(a.playlistTracks)
+	isPlaying := a.isPlaying
+	mode := a.playlistMode
+	a.mu.Unlock()
 
 	if playlistLen == 0 {
-		a.mu.Unlock()
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.PlaylistEmpty)
 		})
 		return
 	}
 
-	if !a.isPlaying {
-		a.mu.Unlock()
+	if !isPlaying {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.NothingPlaying)
 		})
 		return
 	}
 
-	if a.currentTrack < 0 {
+	if currentTrack < 0 {
 		lastIdx := playlistLen - 1
+		a.mu.Lock()
 		track := a.playlistTracks[lastIdx]
 		a.skipAutoPlay = true
 		a.mu.Unlock()
+
 		a.app.QueueUpdateDraw(func() {
 			a.setStatus(a.theme.Sapphire, "▶ "+a.strings.EnteringPlaylist)
 		})
@@ -424,35 +442,43 @@ func (a *SimpleApp) playPrevious() {
 		return
 	}
 
-	prev := a.currentTrack - 1
+	prev := currentTrack - 1
 	if prev < 0 {
-		if a.playlistMode == ModeRepeatAll {
-			prev = len(a.playlistTracks) - 1
+		if mode == ModeRepeatAll {
+			prev = playlistLen - 1
 		} else {
-			a.mu.Unlock()
 			a.app.QueueUpdateDraw(func() {
 				a.setStatus(a.theme.Yellow, a.strings.AlreadyFirstSong)
 			})
 			return
 		}
 	}
+
+	a.mu.Lock()
 	track := a.playlistTracks[prev]
 	a.skipAutoPlay = true
 	a.mu.Unlock()
+
+	a.app.QueueUpdateDraw(func() {
+		a.setStatusf(a.theme.Green, "⏮ Back to: %s", track.Title)
+	})
 
 	go a.playTrackSimple(track, prev)
 }
 
 func (a *SimpleApp) toggleMode() {
+	a.mu.Lock()
 	if a.playMode == ModeAudio {
 		a.playMode = ModeVideo
 	} else {
 		a.playMode = ModeAudio
 	}
+	newMode := a.playMode
+	a.mu.Unlock()
 
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()
 		a.updateModeBadge()
-		a.setStatusf(a.theme.Sapphire, "  "+a.strings.ModeChanged, a.playMode.String())
+		a.setStatusf(a.theme.Sapphire, "  "+a.strings.ModeChanged, newMode.String())
 	})
 }

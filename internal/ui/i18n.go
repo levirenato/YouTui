@@ -113,6 +113,20 @@ type Strings struct {
 	YtDlpNotFound    string
 	YtDlpStartFailed string
 	YtDlpError       string
+
+	warnFailedKillMpv     string
+	errorPause            string
+	socatNotInstalled     string
+	socatCmdNotFound      string
+	nothingPlaying        string
+	youtubeBlocked        string
+	errorStartMpv         string
+	warnFailedKillPrevMpv string
+	stateRestored         string
+	ytDlpOutdated         string
+	shuffle               string
+	repeatOne             string
+	repeatAll             string
 }
 
 var translations = map[Language]Strings{
@@ -202,9 +216,9 @@ var translations = map[Language]Strings{
 		Page:             "Página",
 
 		CmdSearchBar:   "Digite para buscar | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
-		CmdResultsBar:  "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
-		CmdPlaylistBar: "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
-		CmdPlayerBar:   "[#a6e3a1]Space[-] Pause/Play | [#89dceb]n[-] Next | [#89dceb]p[-] Prev | [#f38ba8]s[-] Stop | [#cba6f7]m[-] Modo | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
+		CmdResultsBar:  "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Tocar | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
+		CmdPlaylistBar: "[#89b4fa]↑/↓[-] Nav | [#89b4fa]Enter[-] Tocar | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repetir | [#94e2d5]h[-] Aleatório | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
+		CmdPlayerBar:   "[#a6e3a1]Space[-] Tocar/Pausar | [#89dceb]n[-] Next | [#89dceb]p[-] Prev | [#f38ba8]s[-] Parar | [#cba6f7]m[-] Modo | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
 		CmdDefaultBar:  "[#89b4fa]Tab[-] Navegar entre painéis | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
 
 		HelpNavigationText: "  Tab       Alternar entre painéis (Busca → Resultados → Playlist → Player)\n  /         Focar na busca\n  ↑/↓       Navegar nas listas\n  ?         Mostrar esta ajuda",
@@ -222,6 +236,20 @@ var translations = map[Language]Strings{
 		YtDlpNotFound:    "yt-dlp não encontrado no PATH. Instale com 'pipx install yt-dlp' ou 'pip install --user yt-dlp'",
 		YtDlpStartFailed: "Falha ao iniciar yt-dlp",
 		YtDlpError:       "Erro do yt-dlp",
+
+		warnFailedKillMpv:     "falha ao encerrar o processo mpv:",
+		errorPause:            "Erro ao pausar",
+		socatNotInstalled:     "socat não instalado. Instale",
+		socatCmdNotFound:      "socat comando não encontrado",
+		nothingPlaying:        "Nada tocando no momento",
+		youtubeBlocked:        "YouTube bloqueou (403). Atualize yt-dlp: sudo yt-dlp -U",
+		errorStartMpv:         "Erro ao iniciar mpv: ",
+		warnFailedKillPrevMpv: "falha ao encerrar o processo mpv anterior: ",
+		stateRestored:         "Estado restaurado com sucesso!",
+		ytDlpOutdated:         "yt-dlp desatualizado",
+		shuffle:               "Aleatório",
+		repeatOne:             "Repetir 1",
+		repeatAll:             "Repetir tudo",
 	},
 
 	LanguageEN: {
@@ -330,6 +358,20 @@ var translations = map[Language]Strings{
 		YtDlpNotFound:    "yt-dlp not found in PATH. Install via 'pipx install yt-dlp' or 'pip install --user yt-dlp'",
 		YtDlpStartFailed: "Failed to start yt-dlp",
 		YtDlpError:       "yt-dlp error",
+
+		warnFailedKillMpv:     "failed to kill mpv process: ",
+		errorPause:            "Error pausing: ",
+		socatNotInstalled:     "socat not installed. Install",
+		socatCmdNotFound:      "socat: command not found",
+		nothingPlaying:        "Nothing playing at the moment",
+		youtubeBlocked:        "YouTube blocked (403). Update yt-dlp: sudo yt-dlp -U",
+		errorStartMpv:         "Error starting mpv: ",
+		warnFailedKillPrevMpv: "failed to kill previous mpv process: ",
+		stateRestored:         "State restored successfully!",
+		ytDlpOutdated:         "yt-dlp outdated",
+		shuffle:               "Shuffle",
+		repeatOne:             "Repeat 1",
+		repeatAll:             "Repeat All",
 	},
 }
 

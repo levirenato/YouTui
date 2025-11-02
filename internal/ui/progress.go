@@ -24,14 +24,12 @@ func (a *SimpleApp) startProgressUpdater() {
 	go func() {
 		ticker := time.NewTicker(500 * time.Millisecond)
 		defer ticker.Stop()
-
 		for {
 			select {
 			case <-ticker.C:
 				a.mu.Lock()
 				isPlaying := a.isPlaying
 				a.mu.Unlock()
-
 				if !isPlaying {
 					return
 				}
@@ -48,7 +46,7 @@ func (a *SimpleApp) updateProgress() {
 		return
 	}
 
-	posCmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '{ "command": ["get_property", "time-pos"] }' | socat - UNIX-CONNECT:%s 2>/dev/null | grep -o '"data":[0-9.]*' | cut -d: -f2`, a.mpvSocket))
+	posCmd := exec.Command("sh", "-c", fmt.Sprintf("echo '{ \"command\": [\"get_property\", \"time-pos\"] }' | socat - UNIX-CONNECT:%s 2>/dev/null | grep -o '\"data\":[0-9.]*' | cut -d: -f2", a.mpvSocket))
 	posOut, _ := posCmd.Output()
 	if len(posOut) > 0 {
 		if pos, err := strconv.ParseFloat(strings.TrimSpace(string(posOut)), 64); err == nil {
@@ -56,7 +54,7 @@ func (a *SimpleApp) updateProgress() {
 		}
 	}
 
-	durCmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '{ "command": ["get_property", "duration"] }' | socat - UNIX-CONNECT:%s 2>/dev/null | grep -o '"data":[0-9.]*' | cut -d: -f2`, a.mpvSocket))
+	durCmd := exec.Command("sh", "-c", fmt.Sprintf("echo '{ \"command\": [\"get_property\", \"duration\"] }' | socat - UNIX-CONNECT:%s 2>/dev/null | grep -o '\"data\":[0-9.]*' | cut -d: -f2", a.mpvSocket))
 	durOut, _ := durCmd.Output()
 	if len(durOut) > 0 {
 		if dur, err := strconv.ParseFloat(strings.TrimSpace(string(durOut)), 64); err == nil && dur > 0 {
@@ -78,6 +76,7 @@ func (a *SimpleApp) updatePlayerInfo() {
 	a.playerBox.SetBackgroundColor(a.theme.Base)
 	a.playerBox.SetTitleColor(a.theme.Subtext0)
 	a.thumbnailView.SetBackgroundColor(a.theme.Base)
+
 	a.mu.Lock()
 	isPlaying := a.isPlaying
 	isPaused := a.isPaused
@@ -86,7 +85,6 @@ func (a *SimpleApp) updatePlayerInfo() {
 	playlistLen := len(a.playlistTracks)
 	position := a.position
 	duration := a.duration
-
 	var author string
 	if currentTrack >= 0 && currentTrack < len(a.playlistTracks) {
 		author = a.playlistTracks[currentTrack].Author
@@ -104,7 +102,6 @@ func (a *SimpleApp) updatePlayerInfo() {
 		} else {
 			titleLine = fmt.Sprintf("["+colorTag(a.theme.Text)+"::b] %s[-:-:-]", nowPlaying)
 		}
-
 		if currentTrack >= 0 && playlistLen > 0 {
 			plainTitle := fmt.Sprintf(" %s", nowPlaying)
 			if author != "" && author != str.Unknown {
@@ -135,24 +132,26 @@ func (a *SimpleApp) updatePlayerInfo() {
 			percentage = 0
 		}
 
-		totalBars := min(max(width-18, 20), 100)
-
-		filledBars := int(percentage * float64(totalBars))
-		emptyBars := totalBars - filledBars
-
 		posMin := int(position / 60)
 		posSec := int(position) % 60
 		durMin := int(duration / 60)
 		durSec := int(duration) % 60
 
-		progressLine = fmt.Sprintf("[%s]%s[-] ["+colorTag(a.theme.Blue)+"]%s["+colorTag(a.theme.Surface1)+"]%s[-]  ["+colorTag(a.theme.Sapphire)+"]%02d:%02d[-] ["+colorTag(a.theme.Surface2)+"]/[-] ["+colorTag(a.theme.Text)+"]%02d:%02d[-]",
+		fixedChars := 18
+
+		totalBars := max(width-fixedChars, 10)
+		filledBars := int(percentage * float64(totalBars))
+		emptyBars := totalBars - filledBars
+
+		progressLine = fmt.Sprintf("[%s]%s[-] ["+colorTag(a.theme.Blue)+"]%s["+colorTag(a.theme.Surface1)+"]%s[-]  ["+colorTag(a.theme.Sapphire)+"]%02d:%02d[-] ["+colorTag(a.theme.Surface2)+"]/[-] ["+colorTag(a.theme.Text)+"]%02d:%02d[-] ",
 			iconColor, icon,
 			strings.Repeat("█", filledBars),
 			strings.Repeat("░", emptyBars),
 			posMin, posSec,
 			durMin, durSec)
 	} else {
-		totalBars := min(max(width-18, 20), 100)
+		fixedChars := 18
+		totalBars := max(width-fixedChars, 10)
 		progressLine = fmt.Sprintf("["+colorTag(a.theme.Subtext0)+"]⏹ %s  --:-- / --:--[-]", strings.Repeat("░", totalBars))
 	}
 
@@ -164,6 +163,7 @@ func (a *SimpleApp) updateModeBadge() {
 	mode := a.playMode
 	strings := a.strings
 	a.mu.Unlock()
+
 	a.playerInfo.SetTitleColor(a.theme.Subtext0)
 
 	var badge string
@@ -172,7 +172,6 @@ func (a *SimpleApp) updateModeBadge() {
 	} else {
 		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Green) + ":b]  " + strings.Audio + " [-:-:-] "
 	}
-
 	a.modeBadge.SetText(badge)
 }
 
@@ -181,6 +180,7 @@ func (a *SimpleApp) updatePlaylistFooter() {
 	mode := a.playlistMode
 	strings := a.strings
 	a.mu.Unlock()
+
 	a.searchResults.SetTitleColor(a.theme.Subtext0)
 
 	var footer string
@@ -194,6 +194,5 @@ func (a *SimpleApp) updatePlaylistFooter() {
 	default:
 		footer = "[" + colorTag(a.theme.Surface2) + "]󰑗 " + strings.NoRepeat + "[-]"
 	}
-
 	a.playlistFooter.SetText(footer)
 }
