@@ -33,6 +33,7 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 			}(index, track.Thumbnail)
 		}
 
+		a.AutoSaveState()
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", count))
 		a.setStatus(a.theme.Green, "✓ "+fmt.Sprintf(a.strings.AddedToPlaylist, track.Title))
 	})
@@ -81,6 +82,7 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 		a.playlist.SetPlayingIndex(currentIdx)
 
 		a.setStatus(a.theme.Yellow, "✓ "+a.strings.RemovedFromPlaylist)
+		a.AutoSaveState()
 	})
 }
 
@@ -135,6 +137,7 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 		a.playlist.SetPlayingIndex(currentIdx)
 
 		a.setStatus(a.theme.Sapphire, "✓ "+a.strings.ItemMoved)
+		a.AutoSaveState()
 	})
 }
 

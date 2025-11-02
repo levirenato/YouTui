@@ -16,11 +16,12 @@ func (a *SimpleApp) onSearchDone(key tcell.Key) {
 			go a.doSearch(query)
 		}
 	}
+	a.AutoSaveState()
 }
 
 func (a *SimpleApp) doSearch(query string) {
 	a.app.QueueUpdateDraw(func() {
-		a.setStatus(a.theme.Yellow, "  " + a.strings.Searching)
+		a.setStatus(a.theme.Yellow, "  "+a.strings.Searching)
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -62,6 +63,8 @@ func (a *SimpleApp) doSearch(query string) {
 		a.app.SetFocus(a.searchResults.Flex)
 		a.updateCommandBar()
 	})
+
+	a.AutoSaveState()
 }
 
 func (a *SimpleApp) displayCurrentPage() {
@@ -109,7 +112,7 @@ func (a *SimpleApp) nextPage() {
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {
-			a.setStatus(a.theme.Yellow, "⚠ " + a.strings.AlreadyLastPage)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.AlreadyLastPage)
 		})
 	}
 }
@@ -124,7 +127,7 @@ func (a *SimpleApp) prevPage() {
 		})
 	} else {
 		a.app.QueueUpdateDraw(func() {
-			a.setStatus(a.theme.Yellow, "⚠ " + a.strings.AlreadyFirstPage)
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.AlreadyFirstPage)
 		})
 	}
 }
