@@ -1,4 +1,4 @@
-# YouTui 🎵
+# YouTui
 
 A modern YouTube player for the terminal with TUI interface.
 
