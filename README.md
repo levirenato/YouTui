@@ -1,4 +1,4 @@
-# YouTui
+# YouTui-player
 
 A modern YouTube player for the terminal with TUI interface.
 
@@ -7,8 +7,7 @@ A modern YouTube player for the terminal with TUI interface.
 
 ## What does it do?
 
-YouTui is a YouTube player that runs entirely in the terminal, allowing you to search, play music/videos, and manage playlists without leaving the command line. Beautiful interface with inline thumbnails, complete controls, and 4 Catppuccin themes (light + dark).
-
+YouTui-player is a YouTube player that runs entirely in the terminal, allowing you to search, play music/videos, and manage playlists without leaving the command line. Beautiful interface with inline thumbnails, complete controls, and 4 Catppuccin themes (light + dark).
 
 **Key features:**
 
@@ -22,9 +21,9 @@ YouTui is a YouTube player that runs entirely in the terminal, allowing you to s
 - Multilingual (PT-BR and EN)
 
 ## Screenshots
+
 <img width="1917" height="1045" alt="image" src="https://github.com/user-attachments/assets/94df9e10-d1d5-4065-b668-0ae003def764" />
 <img width="1903" height="1036" alt="image" src="https://github.com/user-attachments/assets/e4c9957a-c14b-4c68-9bf1-7a00e3579900" />
-
 
 ## Dependencies
 
@@ -34,21 +33,51 @@ YouTui is a YouTube player that runs entirely in the terminal, allowing you to s
 - **socat** - IPC communication with mpv
 - **Nerd Font** (optional) - For beautiful icons
 
-## Quick Install
+## Installation
+
+### Arch Linux (AUR) — recommended
+
+No Go required. The AUR package handles everything automatically.
 
 ```bash
-# Clone the repository
+# Using yay
+yay -S youtui-player
+
+# Using paru
+paru -S youtui-player
+
+# Manually
+git clone https://aur.archlinux.org/youtui-player.git
+cd youtui-player
+makepkg -si
+```
+
+After install, make sure you have the runtime dependencies:
+
+```bash
+sudo pacman -S mpv yt-dlp socat
+```
+
+---
+
+### Manual (from source)
+
+Requires **Go 1.24+**, **mpv**, **yt-dlp** and **socat**.
+
+```bash
+# Install runtime dependencies (Arch Linux)
+sudo pacman -S mpv yt-dlp socat go
+
+# Clone and build
 git clone https://github.com/IvelOt/youtui-player
-cd YouTui
-
-# Install dependencies and compile (requires sudo)
-make install
-
-# Or just compile (if you already have dependencies)
+cd youtui-player
 make build
 
 # Run
 ./youtui-player
+
+# Or install to /usr/local/bin
+sudo make install-bin
 ```
 
 ## Main Shortcuts
@@ -70,7 +99,7 @@ make build
 
 ## Themes
 
-YouTui includes 4 Catppuccin themes:
+YouTui-player includes 4 Catppuccin themes:
 
 - 🌻 **Latte** - Elegant light mode
 - 🪴 **Frappé** - Cool dark mode
@@ -78,6 +107,7 @@ YouTui includes 4 Catppuccin themes:
 - 🌿 **Mocha** - Deep dark mode (default)
 
 **Switch theme:**
+
 1. Press `Ctrl+C`
 2. Select "Theme"
 3. Choose from 4 available themes
@@ -110,7 +140,7 @@ make clean
 
 MIT License
 
-Copyright (c) 2025 LeviRenato
+Copyright (c) 2025 IvelOt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
