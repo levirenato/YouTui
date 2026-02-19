@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/levirenato/YouTui/internal/config"
+	"github.com/IvelOt/youtui-player/internal/config"
 	"github.com/rivo/tview"
 )
 

@@ -31,7 +31,7 @@ func NewThumbnailCache() (*ThumbnailCache, error) {
 		baseDir = filepath.Join(homeDir, ".cache")
 	}
 
-	cacheDir := filepath.Join(baseDir, "youtui", "thumbnails")
+	cacheDir := filepath.Join(baseDir, "youtui-player", "thumbnails")
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		return nil, err
 	}

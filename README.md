@@ -38,7 +38,7 @@ YouTui is a YouTube player that runs entirely in the terminal, allowing you to s
 
 ```bash
 # Clone the repository
-git clone https://github.com/levirenato/YouTui
+git clone https://github.com/IvelOt/youtui-player
 cd YouTui
 
 # Install dependencies and compile (requires sudo)
@@ -48,7 +48,7 @@ make install
 make build
 
 # Run
-./youtui
+./youtui-player
 ```
 
 ## Main Shortcuts
@@ -82,7 +82,7 @@ YouTui includes 4 Catppuccin themes:
 2. Select "Theme"
 3. Choose from 4 available themes
 
-Theme is automatically saved to `~/.config/youtui/youtui.conf`
+Theme is automatically saved to `~/.config/youtui-player/youtui.conf`
 
 **Custom theme:**
 See [THEMES.md](THEMES.md) for instructions on how to create your own theme.

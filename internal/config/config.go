@@ -25,13 +25,13 @@ type UIConfig struct {
 
 func GetConfigDir() string {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "youtui")
+		return filepath.Join(xdg, "youtui-player")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".config", "youtui")
+	return filepath.Join(home, ".config", "youtui-player")
 }
 
 func GetConfigPath() string {

@@ -1,4 +1,4 @@
-module github.com/levirenato/YouTui
+module github.com/IvelOt/youtui-player
 
 go 1.24.0
 

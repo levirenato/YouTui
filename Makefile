@@ -1,6 +1,6 @@
 .PHONY: help install install-arch install-ubuntu install-macos build run clean test install-bin uninstall deps fmt check-deps version
 
-BINARY_NAME = youtui
+BINARY_NAME = youtui-player
 GO          = go
 PREFIX      = /usr/local
 DESTDIR     =

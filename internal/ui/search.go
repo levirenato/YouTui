@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/levirenato/YouTui/internal/search"
+	"github.com/IvelOt/youtui-player/internal/search"
 )
 
 func (a *SimpleApp) onSearchDone(key tcell.Key) {

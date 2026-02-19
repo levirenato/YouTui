@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/levirenato/YouTui/internal/config"
-	"github.com/levirenato/YouTui/internal/search"
+	"github.com/IvelOt/youtui-player/internal/config"
+	"github.com/IvelOt/youtui-player/internal/search"
 	"github.com/rivo/tview"
 )
 
