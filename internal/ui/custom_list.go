@@ -35,9 +35,6 @@ func NewCustomList(theme *Theme) *CustomList {
 	container := tview.NewFlex().SetDirection(tview.FlexRow)
 	container.SetBackgroundColor(theme.Base)
 
-	// O wrapper usa Mantle (mais escuro que Base) como background.
-	// Isso faz a área da borda (1 char de cada lado) ter cor distinta do
-	// conteúdo interno (Base), tornando as divisórias entre painéis visíveis.
 	wrapper := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(container, 0, 1, false)
@@ -144,18 +141,13 @@ func (c *CustomList) renderVisibleItems() {
 
 	const itemHeight = 3
 
-	// Número de itens que cabem sem overflow. Sem forçar mínimo de 1:
-	// se availableHeight < itemHeight, nenhum item cabe — não renderiza nada,
-	// evitando que o item transborde para painéis adjacentes.
 	itemsPerPage := availableHeight / itemHeight
 
-	// visibleHeight controla a navegação; mantém mínimo 1 para não travar.
 	c.visibleHeight = max(itemsPerPage, 1)
 
 	end := min(c.visibleStart+itemsPerPage, len(c.items))
 
 	if len(c.items) == 0 || itemsPerPage == 0 {
-		// Sem espaço ou sem itens: spacer proporcional preenche o container.
 		spacer := tview.NewBox().SetBackgroundColor(c.theme.Base)
 		c.container.AddItem(spacer, 0, 1, false)
 	} else {
@@ -322,14 +314,10 @@ func formatItemInfoPlain(track Track, index int) string {
 		"⏱ " + track.Duration + " • " + track.Author
 }
 
-// MarkDirty sinaliza que o layout precisa ser recalculado no próximo frame.
 func (c *CustomList) MarkDirty() {
 	c.dirty = true
 }
 
-// RefreshIfResized recalcula os itens visíveis se foi marcado como dirty.
-// Chamado no BeforeDrawFunc — neste ponto os rects do frame ANTERIOR já estão
-// atualizados (SetRect foi chamado no frame de resize anterior).
 func (c *CustomList) RefreshIfResized() {
 	if !c.dirty {
 		return

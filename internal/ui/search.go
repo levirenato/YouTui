@@ -90,7 +90,9 @@ func (a *SimpleApp) displayCurrentPage() {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
-						a.searchResults.SetThumbnail(idx, img)
+						a.app.QueueUpdateDraw(func() {
+							a.searchResults.SetThumbnail(idx, img)
+						})
 					}
 				}(i, track.Thumbnail)
 			}

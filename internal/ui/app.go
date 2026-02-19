@@ -71,7 +71,7 @@ type SimpleApp struct {
 	statusBar      *tview.TextView
 	commandBar     *tview.TextView
 	modeBadge      *tview.TextView
-	helpModal      *tview.Modal
+	helpView       *HelpView
 	configModal    *tview.Modal
 
 	tracks         []Track
@@ -100,6 +100,9 @@ type SimpleApp struct {
 	theme    *Theme
 	language Language
 	strings  Strings
+
+	inModal     bool
+	prevFocused tview.Primitive
 
 	mu sync.Mutex
 }
@@ -240,11 +243,9 @@ func (a *SimpleApp) RestoreState() error {
 			a.searchInput.SetText(state.SearchTerm)
 		}
 
-		// Restaurar paginação antes de exibir a página correta
 		a.pagination.SetTotalItems(len(a.tracks))
 		a.pagination.SetCurrentPage(state.SearchPage)
 
-		// Exibir apenas a página salva (com paginação correta)
 		start, end := a.pagination.GetPageItems()
 		for i, track := range a.tracks[start:end] {
 			a.searchResults.AddItem(track, i)
@@ -252,7 +253,9 @@ func (a *SimpleApp) RestoreState() error {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
-						a.searchResults.SetThumbnail(idx, img)
+						a.app.QueueUpdateDraw(func() {
+							a.searchResults.SetThumbnail(idx, img)
+						})
 					}
 				}(start+i, track.Thumbnail)
 			}
@@ -278,7 +281,9 @@ func (a *SimpleApp) RestoreState() error {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
-						a.playlist.SetThumbnail(idx, img)
+						a.app.QueueUpdateDraw(func() {
+							a.playlist.SetThumbnail(idx, img)
+						})
 					}
 				}(i, track.Thumbnail)
 			}

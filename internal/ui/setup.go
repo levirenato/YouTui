@@ -18,7 +18,7 @@ func (a *SimpleApp) setupUI() {
 	a.setupDetailsComponent()
 	a.setupPlayerComponents()
 	a.setupStatusBars()
-	a.setupHelpModal()
+	a.setupHelpView()
 	a.setupConfigModal()
 	a.setupLayout()
 	a.setupInputHandlers()
@@ -131,13 +131,14 @@ func (a *SimpleApp) setupStatusBars() {
 	a.updateCommandBar()
 }
 
-func (a *SimpleApp) setupHelpModal() {
-	a.helpModal = tview.NewModal().
-		SetText(a.getHelpText()).
-		AddButtons([]string{a.strings.Close}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			a.app.SetRoot(a.getMainLayout(), true)
-		})
+func (a *SimpleApp) setupHelpView() {
+	a.helpView = NewHelpView(a.strings, a.theme, a.app, func() {
+		a.inModal = false
+		a.app.SetRoot(a.getMainLayout(), true)
+		if a.prevFocused != nil {
+			a.app.SetFocus(a.prevFocused)
+		}
+	})
 }
 
 func (a *SimpleApp) setupConfigModal() {
@@ -156,8 +157,10 @@ func (a *SimpleApp) setupConfigModal() {
 			case 1:
 				a.cycleTheme()
 			case 2:
-				a.app.SetRoot(a.helpModal, true)
+				a.app.SetRoot(a.helpView.Flex, true)
+				a.helpView.FocusContent()
 			case 3:
+				a.inModal = false
 				a.app.SetRoot(a.getMainLayout(), true)
 			}
 		})
@@ -213,9 +216,6 @@ func (a *SimpleApp) setupResizeHandler() {
 			lastW, lastH = w, h
 			a.searchResults.MarkDirty()
 			a.playlist.MarkDirty()
-			// Dispara um segundo draw em goroutine separada.
-			// Quando o draw atual terminar e soltar o lock, esse segundo
-			// draw roda com os rects já atualizados e aplica o RefreshIfResized.
 			go a.app.Draw()
 		} else {
 			a.searchResults.RefreshIfResized()
@@ -235,13 +235,33 @@ func (a *SimpleApp) setupInputHandlers() {
 			return nil
 		}
 
+		if event.Key() == tcell.KeyEsc {
+			if a.inModal {
+				a.inModal = false
+				a.app.SetRoot(a.getMainLayout(), true)
+				if a.prevFocused != nil {
+					a.app.SetFocus(a.prevFocused)
+				}
+				return nil
+			}
+		}
+
 		if event.Key() == tcell.KeyCtrlC {
+			a.inModal = true
+			a.prevFocused = focused
 			a.app.SetRoot(a.configModal, true)
 			return nil
 		}
 
+		if a.inModal {
+			return event
+		}
+
 		if event.Rune() == '?' && focused != a.searchInput {
-			a.app.SetRoot(a.helpModal, true)
+			a.inModal = true
+			a.prevFocused = focused
+			a.app.SetRoot(a.helpView.Flex, true)
+			a.helpView.FocusContent()
 			return nil
 		}
 
@@ -274,16 +294,6 @@ func (a *SimpleApp) setupInputHandlers() {
 	})
 }
 
-func (a *SimpleApp) getHelpText() string {
-	return a.strings.HelpTitle + "\n\n" +
-		a.strings.HelpNavigation + ":\n" + a.strings.HelpNavigationText + "\n\n" +
-		a.strings.HelpSearch + ":\n" + a.strings.HelpSearchText + "\n\n" +
-		a.strings.HelpResults + ":\n" + a.strings.HelpResultsText + "\n\n" +
-		a.strings.HelpPlaylist + ":\n" + a.strings.HelpPlaylistText + "\n\n" +
-		a.strings.HelpPlayer + ":\n" + a.strings.HelpPlayerText + "\n  \n" +
-		a.strings.HelpGlobal + ":\n" + a.strings.HelpGlobalText + "\n\n" +
-		a.strings.HelpIcons + ":\n" + a.strings.HelpIconsText
-}
 
 func (a *SimpleApp) getConfigText() string {
 	return a.strings.ConfigText
@@ -392,8 +402,7 @@ func (a *SimpleApp) refreshUI() {
 
 	a.playerBox.SetTitle(" " + a.strings.Player + " ")
 
-	a.helpModal.SetText(a.getHelpText())
-	a.helpModal.ClearButtons().AddButtons([]string{a.strings.Close})
+	a.setupHelpView()
 
 	a.configModal.SetText(a.getConfigText())
 	a.configModal.ClearButtons().AddButtons([]string{
@@ -408,6 +417,7 @@ func (a *SimpleApp) refreshUI() {
 	a.updateModeBadge()
 	a.updatePlayerInfo()
 
+	a.inModal = true
 	a.app.SetRoot(a.configModal, true)
 }
 

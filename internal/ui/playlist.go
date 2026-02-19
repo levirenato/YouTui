@@ -28,7 +28,9 @@ func (a *SimpleApp) addToPlaylist(track Track) {
 			go func(idx int, url string) {
 				img, err := a.thumbCache.GetThumbnailImage(url)
 				if err == nil && img != nil {
-					a.playlist.SetThumbnail(idx, img)
+					a.app.QueueUpdateDraw(func() {
+						a.playlist.SetThumbnail(idx, img)
+					})
 				}
 			}(index, track.Thumbnail)
 		}
@@ -69,7 +71,9 @@ func (a *SimpleApp) removeFromPlaylist(idx int) {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
-						a.playlist.SetThumbnail(idx, img)
+						a.app.QueueUpdateDraw(func() {
+							a.playlist.SetThumbnail(idx, img)
+						})
 					}
 				}(i, t.Thumbnail)
 			}
@@ -124,7 +128,9 @@ func (a *SimpleApp) movePlaylistItem(from, to int) {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
-						a.playlist.SetThumbnail(idx, img)
+						a.app.QueueUpdateDraw(func() {
+							a.playlist.SetThumbnail(idx, img)
+						})
 					}
 				}(i, t.Thumbnail)
 			}

@@ -7,7 +7,6 @@ import (
 
 func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitive) *tcell.EventKey {
 	switch event.Rune() {
-	// Vim navigation: j/k move down/up in lists
 	case 'j':
 		if focused == a.searchResults.Flex {
 			a.searchResults.SelectNext()
@@ -26,7 +25,6 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
-	// Vim navigation: g/G jump to top/bottom
 	case 'g':
 		if focused == a.searchResults.Flex {
 			a.searchResults.SelectFirst()
@@ -81,7 +79,6 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
-	// h: shuffle in playlist, seek -5s in player
 	case 'h':
 		if focused == a.playlist.Flex {
 			go a.toggleShuffle()
@@ -91,21 +88,18 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
-	// l: seek +5s in player
 	case 'l':
 		if focused == a.playerBox {
 			go a.seekMedia(5)
 			return nil
 		}
 
-	// H: seek -30s in player
 	case 'H':
 		if focused == a.playerBox {
 			go a.seekMedia(-30)
 			return nil
 		}
 
-	// L: seek +30s in player
 	case 'L':
 		if focused == a.playerBox {
 			go a.seekMedia(30)

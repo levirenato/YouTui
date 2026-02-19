@@ -75,6 +75,7 @@ type Strings struct {
 	Quit          string
 
 	HelpTitle      string
+	HelpTabAll     string
 	HelpNavigation string
 	HelpSearch     string
 	HelpResults    string
@@ -106,7 +107,8 @@ type Strings struct {
 	HelpGlobalText     string
 	HelpIconsText      string
 
-	ConfigText string
+	ConfigText  string
+	EscToClose  string
 
 	EmptyQuery       string
 	NoResultsFor     string
@@ -198,6 +200,7 @@ var translations = map[Language]Strings{
 		Quit:          "Sair",
 
 		HelpTitle:      "ATALHOS DO YOUTUI",
+		HelpTabAll:     "Tudo",
 		HelpNavigation: "NAVEGAÇÃO",
 		HelpSearch:     "BUSCA",
 		HelpResults:    "RESULTADOS",
@@ -226,10 +229,11 @@ var translations = map[Language]Strings{
 		HelpResultsText:    "  Enter     Tocar faixa diretamente (sem playlist)\n  a         Adicionar à playlist\n  [ ]       Navegar entre páginas (anterior/próxima)",
 		HelpPlaylistText:   "  Enter     Tocar faixa da playlist\n  Space     Tocar playlist do início\n  d         Remover item\n  J         Mover item para baixo\n  K         Mover item para cima\n  r         Ciclar repetição (󰑗 → 󰑘 → 󰑖 → 󰑗)\n  h         Toggle shuffle ()",
 		HelpPlayerText:     "  Space     Pause/Play\n  s         Stop\n  n         Próxima música\n  p         Música anterior\n  h / l     Voltar / Avançar 5 segundos\n  H / L     Voltar / Avançar 30 segundos",
-		HelpGlobalText:     "  m         Alternar áudio/vídeo\n  Ctrl+Q    Sair da aplicação\n  Ctrl+C    Configurações",
+		HelpGlobalText:     "  m         Alternar áudio/vídeo\n  Ctrl+Q    Sair da aplicação\n  Ctrl+C    Configurações\n  ?         Esta janela de atalhos\n  Esc       Fechar janela/modal",
 		HelpIconsText:      "  󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório",
 
-		ConfigText: "⚙️  CONFIGURAÇÕES\n\nEscolha uma opção abaixo para configurar o YouTui.\nUse as setas ←/→ para navegar e Enter para selecionar.",
+		ConfigText: "⚙️  CONFIGURAÇÕES\n\nEscolha uma opção abaixo para configurar o YouTui.\nUse as setas ←/→ para navegar e Enter para selecionar.\n\nPressione Esc para fechar.",
+		EscToClose: "Pressione Esc para fechar.",
 
 		EmptyQuery:       "Consulta vazia",
 		NoResultsFor:     "Nenhum resultado para: %q",
@@ -320,6 +324,7 @@ var translations = map[Language]Strings{
 		Quit:          "Quit",
 
 		HelpTitle:      "YOUTUI SHORTCUTS",
+		HelpTabAll:     "All",
 		HelpNavigation: "NAVIGATION",
 		HelpSearch:     "SEARCH",
 		HelpResults:    "RESULTS",
@@ -348,10 +353,11 @@ var translations = map[Language]Strings{
 		HelpResultsText:    "  Enter     Play track directly (no playlist)\n  a         Add to playlist\n  [ ]       Navigate pages (previous/next)",
 		HelpPlaylistText:   "  Enter     Play track from playlist\n  Space     Play playlist from start\n  d         Remove item\n  J         Move item down\n  K         Move item up\n  r         Cycle repeat (󰑗 → 󰑘 → 󰑖 → 󰑗)\n  h         Toggle shuffle ()",
 		HelpPlayerText:     "  Space     Pause/Play\n  s         Stop\n  n         Next song\n  p         Previous song\n  h / l     Seek -5s / +5s\n  H / L     Seek -30s / +30s",
-		HelpGlobalText:     "  m         Toggle audio/video\n  Ctrl+Q    Quit application\n  Ctrl+C    Settings",
+		HelpGlobalText:     "  m         Toggle audio/video\n  Ctrl+Q    Quit application\n  Ctrl+C    Settings\n  ?         This shortcuts window\n  Esc       Close window/modal",
 		HelpIconsText:      "  󰑗 No Repeat  󰑘 Repeat One  󰑖 Repeat All   Shuffle",
 
-		ConfigText: "⚙️  SETTINGS\n\nChoose an option below to configure YouTui.\nUse ←/→ arrows to navigate and Enter to select.",
+		ConfigText: "⚙️  SETTINGS\n\nChoose an option below to configure YouTui.\nUse ←/→ arrows to navigate and Enter to select.\n\nPress Esc to close.",
+		EscToClose: "Press Esc to close.",
 
 		EmptyQuery:       "Empty query",
 		NoResultsFor:     "No results for: %q",
