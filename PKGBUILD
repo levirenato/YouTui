@@ -9,7 +9,7 @@ license=('MIT')
 depends=('mpv' 'yt-dlp' 'socat')
 makedepends=('go')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-b2sums=('a1b0d50c612e56c40f078c0e78a5f52847911cc5c87121614fa5ebf0dcbdd17452dd0477e5132f11131f34d3ee2946e043834f86fdcb20b5377cf07b9e4a55eb')
+b2sums=('3b8dd36b6876cce29a28aabfcd00edcda1f1badf20942991a354232f726d86063a5df633072420e58f1b2883df42413257c4b00dd76de59b4d5dd2f45bd2ddd2')
 
 prepare() {
   cd "youtui-player-$pkgver"
