@@ -1,125 +1,105 @@
-.PHONY: help install install-arch install-ubuntu install-macos build run clean test
+.PHONY: help install install-arch install-ubuntu install-macos build run clean test install-bin uninstall deps fmt check-deps version
 
-# Variáveis
-BINARY_NAME=youtui
-GO=go
-INSTALL_DIR=/usr/local/bin
+BINARY_NAME = youtui
+GO          = go
+PREFIX      = /usr/local
+DESTDIR     =
+BINDIR      = $(DESTDIR)$(PREFIX)/bin
+MANDIR      = $(DESTDIR)$(PREFIX)/share/man/man1
+DATADIR     = $(DESTDIR)$(PREFIX)/share
 
-# Detecta o sistema operacional
+VERSION     ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT      ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+LDFLAGS     = -ldflags "-X main.Version=$(VERSION) -s -w"
+
 UNAME_S := $(shell uname -s)
 
-help: ## Mostra esta mensagem de ajuda
-	@echo "YouTui - Makefile"
+help:
+	@echo "YouTui $(VERSION) - Makefile"
 	@echo ""
-	@echo "Uso: make [target]"
-	@echo ""
-	@echo "Targets disponíveis:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
-install: ## Instala dependências e compila (detecta SO automaticamente)
-	@echo "🔍 Detectando sistema operacional..."
+install: ## Instala dependencias e compila (detecta SO automaticamente)
+	@echo "Detectando sistema operacional..."
 ifeq ($(UNAME_S),Linux)
 	@if [ -f /etc/arch-release ]; then \
-		echo "📦 Arch Linux detectado"; \
+		echo "Arch Linux detectado"; \
 		$(MAKE) install-arch; \
 	elif [ -f /etc/debian_version ]; then \
-		echo "📦 Debian/Ubuntu detectado"; \
+		echo "Debian/Ubuntu detectado"; \
 		$(MAKE) install-ubuntu; \
 	else \
-		echo "❌ Distribuição Linux não suportada automaticamente"; \
-		echo "   Instale manualmente: mpv, yt-dlp, socat"; \
+		echo "Distribuicao Linux nao suportada automaticamente"; \
+		echo "Instale manualmente: mpv, yt-dlp, socat"; \
 		exit 1; \
 	fi
 else ifeq ($(UNAME_S),Darwin)
-	@echo "📦 macOS detectado"
+	@echo "macOS detectado"
 	@$(MAKE) install-macos
 else
-	@echo "❌ Sistema operacional não suportado: $(UNAME_S)"
+	@echo "Sistema operacional nao suportado: $(UNAME_S)"
 	@exit 1
 endif
 	@echo ""
 	@$(MAKE) build
 
-install-arch: ## Instala dependências no Arch Linux
-	@echo "📦 Instalando dependências no Arch Linux..."
+install-arch: ## Instala dependencias no Arch Linux
+	@echo "Instalando dependencias no Arch Linux..."
 	sudo pacman -S --needed mpv yt-dlp socat go
-	@echo "✅ Dependências instaladas!"
-	@echo "💡 Dica: Instale uma Nerd Font para ícones bonitos:"
-	@echo "   yay -S ttf-nerd-fonts-symbols-mono"
+	@echo "Dependencias instaladas!"
 
-install-ubuntu: ## Instala dependências no Ubuntu/Debian
-	@echo "📦 Instalando dependências no Ubuntu/Debian..."
+install-ubuntu: ## Instala dependencias no Ubuntu/Debian
+	@echo "Instalando dependencias no Ubuntu/Debian..."
 	sudo apt update
 	sudo apt install -y mpv socat python3-pip golang
-	@echo "📦 Instalando yt-dlp..."
 	sudo pip3 install -U yt-dlp || pip3 install --user -U yt-dlp
-	@echo "✅ Dependências instaladas!"
-	@echo "💡 Dica: Instale uma Nerd Font para ícones bonitos:"
-	@echo "   https://www.nerdfonts.com/font-downloads"
+	@echo "Dependencias instaladas!"
 
-install-macos: ## Instala dependências no macOS
-	@echo "📦 Instalando dependências no macOS..."
-	@which brew > /dev/null || (echo "❌ Homebrew não encontrado. Instale em: https://brew.sh" && exit 1)
+install-macos: ## Instala dependencias no macOS
+	@echo "Instalando dependencias no macOS..."
+	@which brew > /dev/null || (echo "Homebrew nao encontrado. Instale em: https://brew.sh" && exit 1)
 	brew install mpv yt-dlp socat go
-	@echo "✅ Dependências instaladas!"
-	@echo "💡 Dica: Instale uma Nerd Font para ícones bonitos:"
-	@echo "   brew tap homebrew/cask-fonts"
-	@echo "   brew install --cask font-hack-nerd-font"
+	@echo "Dependencias instaladas!"
 
-deps: ## Baixa dependências do Go
-	@echo "📦 Baixando dependências do Go..."
+deps: ## Baixa dependencias do Go
 	$(GO) mod download
 	$(GO) mod tidy
-	@echo "✅ Dependências do Go instaladas!"
 
 build: deps ## Compila o projeto
-	@echo "🔨 Compilando $(BINARY_NAME)..."
-	$(GO) build -o $(BINARY_NAME) .
-	@echo "✅ Compilado com sucesso: ./$(BINARY_NAME)"
+	@echo "Compilando $(BINARY_NAME) $(VERSION)..."
+	$(GO) build $(LDFLAGS) -o $(BINARY_NAME) .
+	@echo "Compilado: ./$(BINARY_NAME)"
 
 run: build ## Compila e executa
-	@echo "🚀 Executando $(BINARY_NAME)..."
 	./$(BINARY_NAME)
 
-install-bin: build ## Instala o binário em /usr/local/bin
-	@echo "📥 Instalando $(BINARY_NAME) em $(INSTALL_DIR)..."
-	sudo cp $(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME)
-	sudo chmod +x $(INSTALL_DIR)/$(BINARY_NAME)
-	@echo "✅ Instalado! Execute com: $(BINARY_NAME)"
+install-bin: build ## Instala o binario (respeita DESTDIR e PREFIX)
+	@echo "Instalando $(BINARY_NAME) em $(BINDIR)..."
+	install -Dm755 $(BINARY_NAME) $(BINDIR)/$(BINARY_NAME)
+	@echo "Instalado!"
 
-uninstall: ## Remove o binário de /usr/local/bin
-	@echo "🗑️  Removendo $(BINARY_NAME)..."
-	sudo rm -f $(INSTALL_DIR)/$(BINARY_NAME)
-	@echo "✅ Desinstalado!"
+uninstall: ## Remove o binario instalado
+	rm -f $(BINDIR)/$(BINARY_NAME)
+	@echo "Desinstalado."
 
-clean: ## Remove arquivos compilados e cache
-	@echo "🧹 Limpando..."
+clean: ## Remove arquivos compilados
 	rm -f $(BINARY_NAME)
-	rm -rf /tmp/youtui-thumbnails-*
 	$(GO) clean
-	@echo "✅ Limpeza concluída!"
 
 test: ## Executa testes
-	@echo "🧪 Executando testes..."
 	$(GO) test ./...
 
-fmt: ## Formata o código
-	@echo "✨ Formatando código..."
+fmt: ## Formata o codigo
 	$(GO) fmt ./...
-	@echo "✅ Código formatado!"
 
-check-deps: ## Verifica se as dependências estão instaladas
-	@echo "🔍 Verificando dependências..."
-	@which $(GO) > /dev/null && echo "✅ Go instalado" || echo "❌ Go não encontrado"
-	@which mpv > /dev/null && echo "✅ mpv instalado" || echo "❌ mpv não encontrado"
-	@which yt-dlp > /dev/null && echo "✅ yt-dlp instalado" || echo "❌ yt-dlp não encontrado"
-	@which socat > /dev/null && echo "✅ socat instalado" || echo "❌ socat não encontrado"
-	@echo ""
-	@echo "Execute 'make install' para instalar dependências faltantes"
+vet: ## Analisa o codigo
+	$(GO) vet ./...
 
-version: ## Mostra versões das dependências
-	@echo "📊 Versões:"
-	@$(GO) version
-	@mpv --version | head -n 1
-	@yt-dlp --version
-	@echo "socat: $$(socat -V 2>&1 | head -n 1)"
+check-deps: ## Verifica dependencias de runtime
+	@which mpv    > /dev/null && echo "OK mpv"    || echo "FALTANDO mpv"
+	@which yt-dlp > /dev/null && echo "OK yt-dlp" || echo "FALTANDO yt-dlp"
+	@which socat  > /dev/null && echo "OK socat"  || echo "FALTANDO socat"
+
+version: ## Mostra a versao atual
+	@echo $(VERSION)

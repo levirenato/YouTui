@@ -132,7 +132,7 @@ func (a *SimpleApp) setupStatusBars() {
 }
 
 func (a *SimpleApp) setupHelpView() {
-	a.helpView = NewHelpView(a.strings, a.theme, a.app, func() {
+	a.helpView = NewHelpView(a.strings, a.version, a.theme, a.app, func() {
 		a.inModal = false
 		a.app.SetRoot(a.getMainLayout(), true)
 		if a.prevFocused != nil {

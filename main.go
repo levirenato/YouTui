@@ -6,8 +6,10 @@ import (
 	"github.com/levirenato/YouTui/internal/ui"
 )
 
+var Version = "dev"
+
 func main() {
-	app := ui.NewSimpleApp()
+	app := ui.NewSimpleApp(Version)
 
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

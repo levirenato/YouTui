@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -41,7 +42,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	}
 	a.mu.Unlock()
 
-	socketPath := fmt.Sprintf("/tmp/mpv-socket-%d", time.Now().UnixNano())
+	socketPath := filepath.Join(os.TempDir(), fmt.Sprintf("mpv-socket-%d", time.Now().UnixNano()))
 
 	args := []string{
 		"--no-terminal",
@@ -192,7 +193,7 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 func (a *SimpleApp) playTrackDirect(track Track) {
 	a.cleanup()
 
-	socketPath := fmt.Sprintf("/tmp/mpv-socket-%d", time.Now().UnixNano())
+	socketPath := filepath.Join(os.TempDir(), fmt.Sprintf("mpv-socket-%d", time.Now().UnixNano()))
 
 	args := []string{
 		"--no-terminal",

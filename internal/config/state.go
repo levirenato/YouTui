@@ -32,11 +32,14 @@ type Track struct {
 }
 
 func GetStatePath() string {
+	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
+		return filepath.Join(xdg, "youtui", "state.json")
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".config", "youtui", "state.json")
+	return filepath.Join(home, ".local", "state", "youtui", "state.json")
 }
 
 func LoadState() (*PlayerState, error) {

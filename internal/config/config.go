@@ -23,12 +23,19 @@ type UIConfig struct {
 	Language string `toml:"language, omitempty"`
 }
 
-func GetConfigPath() string {
+func GetConfigDir() string {
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "youtui")
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".config", "youtui", "youtui.conf")
+	return filepath.Join(home, ".config", "youtui")
+}
+
+func GetConfigPath() string {
+	return filepath.Join(GetConfigDir(), "youtui.conf")
 }
 
 func LoadConfig() (*Config, error) {

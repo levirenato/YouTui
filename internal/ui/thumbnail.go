@@ -20,12 +20,18 @@ type ThumbnailCache struct {
 }
 
 func NewThumbnailCache() (*ThumbnailCache, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var baseDir string
+	if xdg := os.Getenv("XDG_CACHE_HOME"); xdg != "" {
+		baseDir = xdg
+	} else {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+		baseDir = filepath.Join(homeDir, ".cache")
 	}
 
-	cacheDir := filepath.Join(homeDir, ".cache", "youtui", "thumbnails")
+	cacheDir := filepath.Join(baseDir, "youtui", "thumbnails")
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		return nil, err
 	}

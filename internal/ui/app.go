@@ -103,11 +103,12 @@ type SimpleApp struct {
 
 	inModal     bool
 	prevFocused tview.Primitive
+	version     string
 
 	mu sync.Mutex
 }
 
-func NewSimpleApp() *SimpleApp {
+func NewSimpleApp(version string) *SimpleApp {
 	cfg, _ := config.LoadConfig()
 
 	var theme *Theme
@@ -134,6 +135,7 @@ func NewSimpleApp() *SimpleApp {
 		playMode:       ModeAudio,
 		currentTrack:   -1,
 		theme:          theme,
+		version:        version,
 		language:       lang,
 		strings:        GetStrings(lang),
 		thumbCache:     thumbCache,

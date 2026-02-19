@@ -24,14 +24,14 @@ type HelpView struct {
 	onClose   func()
 }
 
-func NewHelpView(s Strings, theme *Theme, app *tview.Application, onClose func()) *HelpView {
+func NewHelpView(s Strings, version string, theme *Theme, app *tview.Application, onClose func()) *HelpView {
 	hv := &HelpView{
 		theme:   theme,
 		app:     app,
 		onClose: onClose,
 	}
 	hv.buildTabs(s)
-	hv.build(s)
+	hv.build(s, version)
 	return hv
 }
 
@@ -70,7 +70,7 @@ func (hv *HelpView) buildTabs(s Strings) {
 	}
 }
 
-func (hv *HelpView) build(s Strings) {
+func (hv *HelpView) build(s Strings, version string) {
 	blue := colorTag(hv.theme.Blue)
 	sub0 := colorTag(hv.theme.Subtext0)
 
@@ -107,7 +107,7 @@ func (hv *HelpView) build(s Strings) {
 		AddItem(hintView, 1, 0, false)
 
 	innerFlex.SetBorder(true).
-		SetTitle(" " + s.HelpTitle + " ").
+		SetTitle(" " + s.HelpTitle + " v" + version + " ").
 		SetBorderColor(hv.theme.Blue).
 		SetBackgroundColor(hv.theme.Base)
 
