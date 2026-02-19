@@ -22,6 +22,7 @@ func (a *SimpleApp) setupUI() {
 	a.setupConfigModal()
 	a.setupLayout()
 	a.setupInputHandlers()
+	a.setupResizeHandler()
 }
 
 func (a *SimpleApp) setupSearchComponents() {
@@ -108,7 +109,7 @@ func (a *SimpleApp) setupPlayerComponents() {
 
 	a.playerBox.SetBorder(true).
 		SetTitle(" Player ").
-		SetBorderColor(a.theme.Surface0)
+		SetBorderColor(a.theme.Surface1)
 }
 
 func (a *SimpleApp) setupStatusBars() {
@@ -202,6 +203,26 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 		AddItem(a.playerBox, 5, 0, false).
 		AddItem(statusBarFlex, 1, 0, false).
 		AddItem(a.commandBar, 1, 0, false)
+}
+
+func (a *SimpleApp) setupResizeHandler() {
+	var lastW, lastH int
+	a.app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		w, h := screen.Size()
+		if w != lastW || h != lastH {
+			lastW, lastH = w, h
+			a.searchResults.MarkDirty()
+			a.playlist.MarkDirty()
+			// Dispara um segundo draw em goroutine separada.
+			// Quando o draw atual terminar e soltar o lock, esse segundo
+			// draw roda com os rects já atualizados e aplica o RefreshIfResized.
+			go a.app.Draw()
+		} else {
+			a.searchResults.RefreshIfResized()
+			a.playlist.RefreshIfResized()
+		}
+		return false
+	})
 }
 
 func (a *SimpleApp) setupInputHandlers() {
@@ -338,7 +359,7 @@ func (a *SimpleApp) applyTheme() {
 	a.searchResults.SetTheme(a.theme)
 	a.playlist.SetTheme(a.theme)
 
-	a.playerBox.SetBorderColor(a.theme.Surface0)
+	a.playerBox.SetBorderColor(a.theme.Surface1)
 
 	a.statusBar.SetBackgroundColor(a.theme.Base)
 	a.statusBar.SetTextColor(a.theme.Text)

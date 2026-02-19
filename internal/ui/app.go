@@ -208,6 +208,7 @@ func (a *SimpleApp) SaveCurrentState() error {
 		PlayMode:          int(a.playMode),
 		SearchScrollIdx:   a.searchResults.GetCurrentItem(),
 		PlaylistScrollIdx: a.playlist.GetCurrentItem(),
+		SearchPage:        a.pagination.GetCurrentPage(),
 	}
 
 	return config.SaveState(state)
@@ -239,22 +240,34 @@ func (a *SimpleApp) RestoreState() error {
 			a.searchInput.SetText(state.SearchTerm)
 		}
 
-		a.searchResults.Clear()
-		for i, track := range a.tracks {
-			a.searchResults.AddItem(track, i)
+		// Restaurar paginação antes de exibir a página correta
+		a.pagination.SetTotalItems(len(a.tracks))
+		a.pagination.SetCurrentPage(state.SearchPage)
 
+		// Exibir apenas a página salva (com paginação correta)
+		start, end := a.pagination.GetPageItems()
+		for i, track := range a.tracks[start:end] {
+			a.searchResults.AddItem(track, i)
 			if track.Thumbnail != "" && a.thumbCache != nil {
 				go func(idx int, url string) {
 					img, err := a.thumbCache.GetThumbnailImage(url)
 					if err == nil && img != nil {
 						a.searchResults.SetThumbnail(idx, img)
 					}
-				}(i, track.Thumbnail)
+				}(start+i, track.Thumbnail)
 			}
 		}
 
-		if state.SearchScrollIdx > 0 && state.SearchScrollIdx < len(a.tracks) {
+		if state.SearchScrollIdx > 0 && state.SearchScrollIdx < (end-start) {
 			a.searchResults.SetCurrentIndex(state.SearchScrollIdx)
+		}
+
+		currentPage := a.pagination.GetCurrentPage() + 1
+		totalPages := a.pagination.GetTotalPages()
+		if totalPages > 0 {
+			a.searchResults.SetTitle(fmt.Sprintf(" %s [%s %d/%d] ", a.strings.Results, a.strings.Page, currentPage, totalPages))
+		} else {
+			a.searchResults.SetTitle(fmt.Sprintf(" %s [0] ", a.strings.Results))
 		}
 
 		a.playlist.Clear()
@@ -279,7 +292,6 @@ func (a *SimpleApp) RestoreState() error {
 			a.playlist.SetPlayingIndex(state.CurrentTrackIdx)
 		}
 
-		a.searchResults.SetTitle(fmt.Sprintf(" %s [%d] ", a.strings.Results, len(a.tracks)))
 		a.playlist.SetTitle(fmt.Sprintf(" Playlist [%d] ", len(a.playlistTracks)))
 
 		a.updatePlayerInfo()

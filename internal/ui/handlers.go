@@ -7,6 +7,44 @@ import (
 
 func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitive) *tcell.EventKey {
 	switch event.Rune() {
+	// Vim navigation: j/k move down/up in lists
+	case 'j':
+		if focused == a.searchResults.Flex {
+			a.searchResults.SelectNext()
+			return nil
+		} else if focused == a.playlist.Flex {
+			a.playlist.SelectNext()
+			return nil
+		}
+
+	case 'k':
+		if focused == a.searchResults.Flex {
+			a.searchResults.SelectPrevious()
+			return nil
+		} else if focused == a.playlist.Flex {
+			a.playlist.SelectPrevious()
+			return nil
+		}
+
+	// Vim navigation: g/G jump to top/bottom
+	case 'g':
+		if focused == a.searchResults.Flex {
+			a.searchResults.SelectFirst()
+			return nil
+		} else if focused == a.playlist.Flex {
+			a.playlist.SelectFirst()
+			return nil
+		}
+
+	case 'G':
+		if focused == a.searchResults.Flex {
+			a.searchResults.SelectLast()
+			return nil
+		} else if focused == a.playlist.Flex {
+			a.playlist.SelectLast()
+			return nil
+		}
+
 	case 'a':
 		if focused == a.searchResults.Flex {
 			track := a.searchResults.GetCurrentTrack()
@@ -43,9 +81,34 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
+	// h: shuffle in playlist, seek -5s in player
 	case 'h':
 		if focused == a.playlist.Flex {
 			go a.toggleShuffle()
+			return nil
+		} else if focused == a.playerBox {
+			go a.seekMedia(-5)
+			return nil
+		}
+
+	// l: seek +5s in player
+	case 'l':
+		if focused == a.playerBox {
+			go a.seekMedia(5)
+			return nil
+		}
+
+	// H: seek -30s in player
+	case 'H':
+		if focused == a.playerBox {
+			go a.seekMedia(-30)
+			return nil
+		}
+
+	// L: seek +30s in player
+	case 'L':
+		if focused == a.playerBox {
+			go a.seekMedia(30)
 			return nil
 		}
 
@@ -101,12 +164,12 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 func (a *SimpleApp) updateCommandBar() {
 	focused := a.app.GetFocus()
 
-	a.searchInput.SetBorderColor(a.theme.Surface0)
+	a.searchInput.SetBorderColor(a.theme.Surface1)
 	a.searchInput.SetBackgroundColor(a.theme.Base)
 	a.searchInput.SetTitleColor(a.theme.Subtext0)
-	a.searchResults.SetBorderColor(a.theme.Surface0)
-	a.playlist.SetBorderColor(a.theme.Surface0)
-	a.playerBox.SetBorderColor(a.theme.Surface0)
+	a.searchResults.SetBorderColor(a.theme.Surface1)
+	a.playlist.SetBorderColor(a.theme.Surface1)
+	a.playerBox.SetBorderColor(a.theme.Surface1)
 
 	var help string
 

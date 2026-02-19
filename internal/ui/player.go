@@ -466,6 +466,25 @@ func (a *SimpleApp) playPrevious() {
 	go a.playTrackSimple(track, prev)
 }
 
+func (a *SimpleApp) seekMedia(seconds float64) {
+	a.mu.Lock()
+	isPlaying := a.isPlaying
+	socket := a.mpvSocket
+	a.mu.Unlock()
+
+	if !isPlaying || socket == "" {
+		return
+	}
+
+	cmd := exec.Command("sh", "-c", fmt.Sprintf(`echo '{ "command": ["seek", %g, "relative"] }' | socat - "%s" 2>&1`, seconds, socket))
+	cmd.Run()
+
+	go func() {
+		time.Sleep(150 * time.Millisecond)
+		a.updateProgress()
+	}()
+}
+
 func (a *SimpleApp) toggleMode() {
 	a.mu.Lock()
 	if a.playMode == ModeAudio {

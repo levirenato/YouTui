@@ -17,6 +17,7 @@ type PlayerState struct {
 	PlayMode          int     `json:"play_mode"`     // 0=Audio, 1=Video
 	SearchScrollIdx   int     `json:"search_scroll_idx"`
 	PlaylistScrollIdx int     `json:"playlist_scroll_idx"`
+	SearchPage        int     `json:"search_page"`
 	LastSaved         string  `json:"last_saved"`
 }
 

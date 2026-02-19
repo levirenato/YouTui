@@ -59,3 +59,10 @@ func (p *Pagination) GetPageItems() (start, end int) {
 func (p *Pagination) Reset() {
 	p.currentPage = 0
 }
+
+func (p *Pagination) SetCurrentPage(page int) {
+	totalPages := p.GetTotalPages()
+	if page >= 0 && (totalPages == 0 || page < totalPages) {
+		p.currentPage = page
+	}
+}
