@@ -163,6 +163,98 @@ func SearchVideos(ctx context.Context, q string, limit int) ([]Result, error) {
 	return results, nil
 }
 
+func GetPlaylistVideos(ctx context.Context, url string, limit int) ([]Result, error) {
+	t := getTexts()
+	if url == "" {
+		return nil, errors.New(t.EmptyQuery)
+	}
+
+	if limit <= 0 {
+		limit = 200
+	}
+
+	args := []string{
+		"-j",
+		"--no-warnings",
+		"--flat-playlist",
+		"--playlist-end", fmt.Sprintf("%d", limit),
+		url,
+	}
+
+	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("stdout pipe: %w", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			return nil, fmt.Errorf("%s", t.YtDlpNotFound)
+		}
+		return nil, fmt.Errorf("%s: %w", t.YtDlpStartFailed, err)
+	}
+
+	sc := bufio.NewScanner(stdout)
+	sc.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
+
+	var results []Result
+	for sc.Scan() {
+		var it ytdlpItem
+		if err := json.Unmarshal([]byte(sc.Text()), &it); err != nil {
+			continue
+		}
+		if it.ID == "" && it.WebpageURL == "" && it.Title == "" {
+			continue
+		}
+
+		u := it.WebpageURL
+		if u == "" && it.ID != "" {
+			u = "https://www.youtube.com/watch?v=" + it.ID
+		}
+
+		dur := ""
+		if it.Duration > 0 {
+			dur = humanDuration(int(it.Duration))
+		}
+
+		thumb := ""
+		if it.ID != "" {
+			thumb = fmt.Sprintf("https://i.ytimg.com/vi/%s/hqdefault.jpg", it.ID)
+		}
+
+		publishedAt := t.UnknownDate
+		if len(it.UploadDate) == 8 {
+			publishedAt = fmt.Sprintf("%s/%s/%s", it.UploadDate[6:8], it.UploadDate[4:6], it.UploadDate[0:4])
+		}
+
+		description := it.Description
+		if description == "" {
+			description = t.NoDescription
+		}
+
+		results = append(results, Result{
+			Title:       it.Title,
+			Author:      it.Uploader,
+			Duration:    dur,
+			URL:         u,
+			Thumbnail:   thumb,
+			PublishedAt: publishedAt,
+			Description: description,
+		})
+
+		if len(results) >= limit {
+			break
+		}
+	}
+
+	_ = cmd.Wait()
+
+	if len(results) == 0 {
+		return nil, fmt.Errorf("%s: %q", t.NoResultsFor, url)
+	}
+	return results, nil
+}
+
 func GetVideoDetails(ctx context.Context, url string) (*Result, error) {
 	t := getTexts()
 

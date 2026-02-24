@@ -43,12 +43,22 @@ func (a *SimpleApp) handleKeyPress(event *tcell.EventKey, focused tview.Primitiv
 			return nil
 		}
 
+	case 'y':
+		go a.yankURL(focused)
+		return nil
+
 	case 'a':
 		if focused == a.searchResults.Flex {
 			track := a.searchResults.GetCurrentTrack()
 			if track != nil {
 				go a.addToPlaylist(*track)
 			}
+			return nil
+		}
+
+	case 'A':
+		if focused == a.searchResults.Flex {
+			go a.addAllToPlaylist()
 			return nil
 		}
 

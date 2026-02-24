@@ -115,6 +115,13 @@ type Strings struct {
 	ConfigText  string
 	EscToClose  string
 
+	URLCopied        string
+	NoTrackSelected  string
+	ClipboardError   string
+	LoadingURL       string
+	LoadingPlaylist  string
+	PlaylistImported string
+
 	EmptyQuery       string
 	NoResultsFor     string
 	YtDlpNotFound    string
@@ -228,22 +235,29 @@ var translations = map[Language]Strings{
 		NoDescription:    "Sem descrição disponível",
 		Page:             "Página",
 
-		CmdSearchBar:   "Digite para buscar | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
-		CmdResultsBar:  "[#89b4fa]j/k[-] Nav | [#89b4fa]g/G[-] Topo/Fim | [#89b4fa]Enter[-] Tocar | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]Ctrl+Q[-] Sair",
-		CmdPlaylistBar: "[#89b4fa]j/k[-] Nav | [#89b4fa]g/G[-] Topo/Fim | [#89b4fa]Enter[-] Tocar | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repetir | [#94e2d5]h[-] Aleatório | [#f38ba8]Ctrl+Q[-] Sair",
-		CmdPlayerBar:   "[#a6e3a1]Space[-] Pausa | [#89dceb]n/p[-] Next/Prev | [#fab387]h/l[-] ±5s | [#fab387]H/L[-] ±30s | [#f38ba8]s[-] Parar | [#cba6f7]m[-] Modo | [#f38ba8]Ctrl+Q[-] Sair",
-		CmdDefaultBar:  "[#89b4fa]Tab[-] Navegar entre painéis | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
+		CmdSearchBar:   "Digite para buscar (ou cole URL) | [#89b4fa]Enter[-] Buscar | [#89b4fa]Tab[-] Próximo | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
+		CmdResultsBar:  "[#89b4fa]j/k[-] Nav | [#89b4fa]Enter[-] Tocar | [#a6e3a1]a[-] Add | [#a6e3a1]A[-] Add todos | [#94e2d5]y[-] Copiar URL | [#cba6f7][ ][-] Pág | [#89b4fa]/[-] Buscar | [#f38ba8]Ctrl+Q[-] Sair",
+		CmdPlaylistBar: "[#89b4fa]j/k[-] Nav | [#89b4fa]Enter[-] Tocar | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#94e2d5]y[-] Copiar URL | [#fab387]r[-] Repetir | [#94e2d5]h[-] Aleatório | [#f38ba8]Ctrl+Q[-] Sair",
+		CmdPlayerBar:   "[#a6e3a1]Space[-] Pausa | [#89dceb]n/p[-] Next/Prev | [#fab387]h/l[-] ±5s | [#fab387]H/L[-] ±30s | [#f38ba8]s[-] Parar | [#94e2d5]y[-] Copiar URL | [#cba6f7]m[-] Modo | [#f38ba8]Ctrl+Q[-] Sair",
+		CmdDefaultBar:  "[#89b4fa]Tab[-] Navegar entre painéis | [#94e2d5]y[-] Copiar URL | [#f38ba8]Ctrl+Q[-] Sair | [#cba6f7]Ctrl+C[-] Config",
 
 		HelpNavigationText: "  Tab         Alternar entre painéis (Busca → Resultados → Playlist → Player)\n  /           Focar na busca\n  ↑/↓  j/k    Navegar nas listas\n  g / G       Ir ao topo / fim da lista\n  ?           Mostrar esta ajuda",
-		HelpSearchText:     "  Digite    Texto para buscar\n  Enter     Executar busca",
-		HelpResultsText:    "  Enter     Tocar faixa diretamente (sem playlist)\n  a         Adicionar à playlist\n  [ ]       Navegar entre páginas (anterior/próxima)",
+		HelpSearchText:     "  Digite    Texto para buscar ou cole uma URL do YouTube\n  Enter     Executar busca / tocar URL / importar playlist",
+		HelpResultsText:    "  Enter     Tocar faixa diretamente (sem playlist)\n  a         Adicionar à playlist\n  A         Adicionar todos à playlist\n  y         Copiar URL da faixa\n  [ ]       Navegar entre páginas (anterior/próxima)",
 		HelpPlaylistText:   "  Enter     Tocar faixa da playlist\n  Space     Tocar playlist do início\n  d         Remover item\n  J         Mover item para baixo\n  K         Mover item para cima\n  r         Ciclar repetição (󰑗 → 󰑘 → 󰑖 → 󰑗)\n  h         Toggle shuffle ()",
 		HelpPlayerText:     "  Space     Pause/Play\n  s         Stop\n  n         Próxima música\n  p         Música anterior\n  h / l     Voltar / Avançar 5 segundos\n  H / L     Voltar / Avançar 30 segundos",
-		HelpGlobalText:     "  m         Alternar áudio/vídeo\n  Ctrl+Q    Sair da aplicação\n  Ctrl+C    Configurações\n  ?         Esta janela de atalhos\n  Esc       Fechar janela/modal",
+		HelpGlobalText:     "  m         Alternar áudio/vídeo\n  y         Copiar URL (faixa tocando ou selecionada)\n  Ctrl+Q    Sair da aplicação\n  Ctrl+C    Configurações\n  ?         Esta janela de atalhos\n  Esc       Fechar janela/modal",
 		HelpIconsText:      "  󰑗 Sem Repetição  󰑘 Repetir Uma  󰑖 Repetir Todas   Aleatório",
 
 		ConfigText: "⚙️  CONFIGURAÇÕES\n\nEscolha uma opção abaixo para configurar o YouTui.\nUse as setas ←/→ para navegar e Enter para selecionar.\n\nPressione Esc para fechar.",
 		EscToClose: "Pressione Esc para fechar.",
+
+		URLCopied:        "URL copiada: %s",
+		NoTrackSelected:  "Nenhuma faixa selecionada",
+		ClipboardError:   "Erro ao copiar: %s",
+		LoadingURL:       "Carregando URL...",
+		LoadingPlaylist:  "Importando playlist...",
+		PlaylistImported: "Adicionadas %d faixas à playlist",
 
 		EmptyQuery:       "Consulta vazia",
 		NoResultsFor:     "Nenhum resultado para: %q",
@@ -357,22 +371,29 @@ var translations = map[Language]Strings{
 		NoDescription:    "No description available",
 		Page:             "Page",
 
-		CmdSearchBar:   "Type to search | [#89b4fa]Enter[-] Search | [#89b4fa]Tab[-] Next | [#f38ba8]Ctrl+Q[-] Quit | [#cba6f7]Ctrl+C[-] Config",
-		CmdResultsBar:  "[#89b4fa]j/k[-] Nav | [#89b4fa]g/G[-] Top/End | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#cba6f7][ ][-] Page | [#89b4fa]/[-] Search | [#f38ba8]Ctrl+Q[-] Quit",
-		CmdPlaylistBar: "[#89b4fa]j/k[-] Nav | [#89b4fa]g/G[-] Top/End | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#f38ba8]Ctrl+Q[-] Quit",
-		CmdPlayerBar:   "[#a6e3a1]Space[-] Pause | [#89dceb]n/p[-] Next/Prev | [#fab387]h/l[-] ±5s | [#fab387]H/L[-] ±30s | [#f38ba8]s[-] Stop | [#cba6f7]m[-] Mode | [#f38ba8]Ctrl+Q[-] Quit",
-		CmdDefaultBar:  "[#89b4fa]Tab[-] Navigate panels | [#f38ba8]Ctrl+Q[-] Quit | [#cba6f7]Ctrl+C[-] Config",
+		CmdSearchBar:   "Type to search (or paste URL) | [#89b4fa]Enter[-] Search | [#89b4fa]Tab[-] Next | [#f38ba8]Ctrl+Q[-] Quit | [#cba6f7]Ctrl+C[-] Config",
+		CmdResultsBar:  "[#89b4fa]j/k[-] Nav | [#89b4fa]Enter[-] Play | [#a6e3a1]a[-] Add | [#a6e3a1]A[-] Add all | [#94e2d5]y[-] Copy URL | [#cba6f7][ ][-] Page | [#89b4fa]/[-] Search | [#f38ba8]Ctrl+Q[-] Quit",
+		CmdPlaylistBar: "[#89b4fa]j/k[-] Nav | [#89b4fa]Enter[-] Play | [#f38ba8]d[-] Del | [#cba6f7]J/K[-] Move | [#94e2d5]y[-] Copy URL | [#fab387]r[-] Repeat | [#94e2d5]h[-] Shuffle | [#f38ba8]Ctrl+Q[-] Quit",
+		CmdPlayerBar:   "[#a6e3a1]Space[-] Pause | [#89dceb]n/p[-] Next/Prev | [#fab387]h/l[-] ±5s | [#fab387]H/L[-] ±30s | [#f38ba8]s[-] Stop | [#94e2d5]y[-] Copy URL | [#cba6f7]m[-] Mode | [#f38ba8]Ctrl+Q[-] Quit",
+		CmdDefaultBar:  "[#89b4fa]Tab[-] Navigate panels | [#94e2d5]y[-] Copy URL | [#f38ba8]Ctrl+Q[-] Quit | [#cba6f7]Ctrl+C[-] Config",
 
 		HelpNavigationText: "  Tab         Switch panels (Search → Results → Playlist → Player)\n  /           Focus search\n  ↑/↓  j/k    Navigate lists\n  g / G       Go to top / end of list\n  ?           Show this help",
-		HelpSearchText:     "  Type      Text to search\n  Enter     Execute search",
-		HelpResultsText:    "  Enter     Play track directly (no playlist)\n  a         Add to playlist\n  [ ]       Navigate pages (previous/next)",
+		HelpSearchText:     "  Type      Text to search or paste a YouTube URL\n  Enter     Search / play URL / import playlist",
+		HelpResultsText:    "  Enter     Play track directly (no playlist)\n  a         Add to playlist\n  A         Add all to playlist\n  y         Copy track URL\n  [ ]       Navigate pages (previous/next)",
 		HelpPlaylistText:   "  Enter     Play track from playlist\n  Space     Play playlist from start\n  d         Remove item\n  J         Move item down\n  K         Move item up\n  r         Cycle repeat (󰑗 → 󰑘 → 󰑖 → 󰑗)\n  h         Toggle shuffle ()",
 		HelpPlayerText:     "  Space     Pause/Play\n  s         Stop\n  n         Next song\n  p         Previous song\n  h / l     Seek -5s / +5s\n  H / L     Seek -30s / +30s",
-		HelpGlobalText:     "  m         Toggle audio/video\n  Ctrl+Q    Quit application\n  Ctrl+C    Settings\n  ?         This shortcuts window\n  Esc       Close window/modal",
+		HelpGlobalText:     "  m         Toggle audio/video\n  y         Copy URL (playing or selected track)\n  Ctrl+Q    Quit application\n  Ctrl+C    Settings\n  ?         This shortcuts window\n  Esc       Close window/modal",
 		HelpIconsText:      "  󰑗 No Repeat  󰑘 Repeat One  󰑖 Repeat All   Shuffle",
 
 		ConfigText: "⚙️  SETTINGS\n\nChoose an option below to configure YouTui.\nUse ←/→ arrows to navigate and Enter to select.\n\nPress Esc to close.",
 		EscToClose: "Press Esc to close.",
+
+		URLCopied:        "URL copied: %s",
+		NoTrackSelected:  "No track selected",
+		ClipboardError:   "Clipboard error: %s",
+		LoadingURL:       "Loading URL...",
+		LoadingPlaylist:  "Importing playlist...",
+		PlaylistImported: "Added %d tracks to playlist",
 
 		EmptyQuery:       "Empty query",
 		NoResultsFor:     "No results for: %q",

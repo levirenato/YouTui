@@ -3,31 +3,53 @@ package ui
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/IvelOt/youtui-player/internal/search"
 )
 
+func isYouTubeURL(s string) bool {
+	s = strings.TrimSpace(s)
+	return strings.Contains(s, "youtube.com/watch") ||
+		strings.Contains(s, "youtu.be/") ||
+		strings.Contains(s, "youtube.com/shorts/") ||
+		strings.Contains(s, "youtube.com/playlist") ||
+		strings.Contains(s, "music.youtube.com/watch")
+}
+
+func isPlaylistURL(s string) bool {
+	s = strings.TrimSpace(s)
+	return strings.Contains(s, "youtube.com/playlist?list=") ||
+		(isYouTubeURL(s) && strings.Contains(s, "&list="))
+}
+
 func (a *SimpleApp) onSearchDone(key tcell.Key) {
 	if key == tcell.KeyEnter {
-		query := a.searchInput.GetText()
+		query := strings.TrimSpace(a.searchInput.GetText())
 		if query != "" {
-			go a.doSearch(query)
+			if isPlaylistURL(query) {
+				go a.searchPlaylistURL(query)
+			} else if isYouTubeURL(query) {
+				go a.searchVideoURL(query)
+			} else {
+				go a.doSearch(query)
+			}
 		}
 	}
 	a.AutoSaveState()
 }
 
-func (a *SimpleApp) doSearch(query string) {
+func (a *SimpleApp) searchVideoURL(url string) {
 	a.app.QueueUpdateDraw(func() {
-		a.setStatus(a.theme.Yellow, "  "+a.strings.Searching)
+		a.setStatus(a.theme.Yellow, "  "+a.strings.LoadingURL)
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	results, err := search.SearchVideos(ctx, query, 30)
+	result, err := search.GetVideoDetails(ctx, url)
 	if err != nil {
 		a.app.QueueUpdateDraw(func() {
 			a.setStatusf(a.theme.Red, "❌ "+a.strings.SearchError, err)
@@ -35,6 +57,29 @@ func (a *SimpleApp) doSearch(query string) {
 		return
 	}
 
+	a.populateResults([]search.Result{*result})
+}
+
+func (a *SimpleApp) searchPlaylistURL(url string) {
+	a.app.QueueUpdateDraw(func() {
+		a.setStatus(a.theme.Yellow, "  "+a.strings.LoadingPlaylist)
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	results, err := search.GetPlaylistVideos(ctx, url, 200)
+	if err != nil {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatusf(a.theme.Red, "❌ "+a.strings.SearchError, err)
+		})
+		return
+	}
+
+	a.populateResults(results)
+}
+
+func (a *SimpleApp) populateResults(results []search.Result) {
 	a.mu.Lock()
 	a.tracks = make([]Track, len(results))
 	for i, r := range results {
@@ -65,6 +110,95 @@ func (a *SimpleApp) doSearch(query string) {
 	})
 
 	a.AutoSaveState()
+}
+
+func (a *SimpleApp) addAllToPlaylist() {
+	a.mu.Lock()
+	tracks := make([]Track, len(a.tracks))
+	copy(tracks, a.tracks)
+	a.mu.Unlock()
+
+	if len(tracks) == 0 {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.PlaylistEmpty)
+		})
+		return
+	}
+
+	for _, track := range tracks {
+		a.addToPlaylist(track)
+	}
+
+	count := len(tracks)
+	a.app.QueueUpdateDraw(func() {
+		a.setStatusf(a.theme.Green, "✓ "+a.strings.PlaylistImported, count)
+	})
+}
+
+func (a *SimpleApp) yankURL(focused interface{}) {
+	var url string
+
+	a.mu.Lock()
+	// Try current playing track first
+	if a.isPlaying && a.currentTrack >= 0 && a.currentTrack < len(a.playlistTracks) {
+		url = a.playlistTracks[a.currentTrack].URL
+	}
+	a.mu.Unlock()
+
+	// If nothing playing, try selected item in focused list
+	if url == "" {
+		switch focused {
+		case a.searchResults.Flex:
+			track := a.searchResults.GetCurrentTrack()
+			if track != nil {
+				url = track.URL
+			}
+		case a.playlist.Flex:
+			idx := a.playlist.GetCurrentItem()
+			a.mu.Lock()
+			if idx >= 0 && idx < len(a.playlistTracks) {
+				url = a.playlistTracks[idx].URL
+			}
+			a.mu.Unlock()
+		}
+	}
+
+	if url == "" {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Yellow, "⚠ "+a.strings.NoTrackSelected)
+		})
+		return
+	}
+
+	if err := copyToClipboard(url); err != nil {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatusf(a.theme.Red, "❌ "+a.strings.ClipboardError, err)
+		})
+		return
+	}
+
+	a.app.QueueUpdateDraw(func() {
+		a.setStatusf(a.theme.Green, "  "+a.strings.URLCopied, url)
+	})
+}
+
+func (a *SimpleApp) doSearch(query string) {
+	a.app.QueueUpdateDraw(func() {
+		a.setStatus(a.theme.Yellow, "  "+a.strings.Searching)
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	results, err := search.SearchVideos(ctx, query, 30)
+	if err != nil {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatusf(a.theme.Red, "❌ "+a.strings.SearchError, err)
+		})
+		return
+	}
+
+	a.populateResults(results)
 }
 
 func (a *SimpleApp) displayCurrentPage() {
