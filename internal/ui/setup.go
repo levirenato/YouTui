@@ -433,6 +433,9 @@ func qualityLabel(q string) string {
 	if q == "best" || q == "" {
 		return "Best"
 	}
+	if q == "tct" {
+		return "Terminal"
+	}
 	return q + "p"
 }
 
@@ -448,7 +451,7 @@ func codecLabel(c string) string {
 }
 
 func (a *SimpleApp) cycleVideoQuality() {
-	qualities := []string{"best", "360", "480", "720", "1080"}
+	qualities := []string{"best", "360", "480", "720", "1080", "tct"}
 
 	a.mu.Lock()
 	current := a.videoQuality

@@ -16,6 +16,10 @@ YouTui-player is a YouTube player that runs entirely in the terminal, allowing y
 - Playlist with shuffle, repeat, and navigation
 - Complete controls (play, pause, next, previous)
 - Real-time progress bar
+- Audio and video playback modes
+- Terminal video mode (renders video as unicode art via `mpv --vo=tct`)
+- Configurable video quality (Best, 360p, 480p, 720p, 1080p, Terminal)
+- Configurable video codec (Any, VP9, AV1)
 - 4 Catppuccin themes (🌻 Latte, 🪴 Frappé, 🌺 Macchiato, 🌿 Mocha)
 - Custom theme support
 - Multilingual (PT-BR and EN)
@@ -96,6 +100,7 @@ sudo make install-bin
 | `?`       | Full help            |
 | `Ctrl+Q`  | Quit                 |
 | `Ctrl+C`  | Settings             |
+| `m`       | Toggle audio/video   |
 
 ## Themes
 

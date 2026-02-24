@@ -24,6 +24,10 @@ func buildYtdlFormat(quality, codec string) string {
 		codecFilter = "[vcodec^=av01]"
 	}
 
+	if quality == "tct" {
+		return "bestvideo[height<=360]+bestaudio/best[height<=360]"
+	}
+
 	if quality == "best" || quality == "" {
 		if codecFilter == "" {
 			return "bestvideo+bestaudio/best"
@@ -83,6 +87,32 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	quality := a.videoQuality
 	codec := a.videoCodec
 	a.mu.Unlock()
+
+	if quality == "tct" {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Sapphire, a.strings.TerminalVideoStarting)
+		})
+		tctArgs := []string{
+			"--vo=tct",
+			"--vo-tct-algo=half-blocks",
+			"--vo-tct-256=yes",
+			"--really-quiet",
+			"--script-opts=ytdl_hook-ytdl_path=yt-dlp",
+			"--ytdl-format=" + buildYtdlFormat("tct", ""),
+			track.URL,
+		}
+		a.app.Suspend(func() {
+			tctCmd := exec.Command("mpv", tctArgs...)
+			tctCmd.Stdin = os.Stdin
+			tctCmd.Stdout = os.Stdout
+			tctCmd.Stderr = os.Stderr
+			_ = tctCmd.Run()
+		})
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Green, "▶ "+a.strings.PlaybackFinished)
+		})
+		return
+	}
 
 	if playMode == ModeAudio {
 		args = append(args, "--no-video", "--ytdl-format=bestaudio")
@@ -240,6 +270,32 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	quality := a.videoQuality
 	codec := a.videoCodec
 	a.mu.Unlock()
+
+	if quality == "tct" {
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Sapphire, a.strings.TerminalVideoStarting)
+		})
+		tctArgs := []string{
+			"--vo=tct",
+			"--vo-tct-algo=half-blocks",
+			"--vo-tct-256=yes",
+			"--really-quiet",
+			"--script-opts=ytdl_hook-ytdl_path=yt-dlp",
+			"--ytdl-format=" + buildYtdlFormat("tct", ""),
+			track.URL,
+		}
+		a.app.Suspend(func() {
+			tctCmd := exec.Command("mpv", tctArgs...)
+			tctCmd.Stdin = os.Stdin
+			tctCmd.Stdout = os.Stdout
+			tctCmd.Stderr = os.Stderr
+			_ = tctCmd.Run()
+		})
+		a.app.QueueUpdateDraw(func() {
+			a.setStatus(a.theme.Green, "▶ "+a.strings.PlaybackFinished)
+		})
+		return
+	}
 
 	if playMode == ModeAudio {
 		args = append(args, "--no-video", "--ytdl-format=bestaudio")

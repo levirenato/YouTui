@@ -128,6 +128,9 @@ type Strings struct {
 	YtDlpStartFailed string
 	YtDlpError       string
 
+	TerminalVideo         string
+	TerminalVideoStarting string
+
 	warnFailedKillMpv     string
 	errorPause            string
 	socatNotInstalled     string
@@ -265,6 +268,9 @@ var translations = map[Language]Strings{
 		YtDlpStartFailed: "Falha ao iniciar yt-dlp",
 		YtDlpError:       "Erro do yt-dlp",
 
+		TerminalVideo:         "Terminal (vídeo no terminal)",
+		TerminalVideoStarting: "Iniciando vídeo no terminal... (q para voltar)",
+
 		warnFailedKillMpv:     "falha ao encerrar o processo mpv:",
 		errorPause:            "Erro ao pausar",
 		socatNotInstalled:     "socat não instalado. Instale",
@@ -400,6 +406,9 @@ var translations = map[Language]Strings{
 		YtDlpNotFound:    "yt-dlp not found in PATH. Install via 'pipx install yt-dlp' or 'pip install --user yt-dlp'",
 		YtDlpStartFailed: "Failed to start yt-dlp",
 		YtDlpError:       "yt-dlp error",
+
+		TerminalVideo:         "Terminal (video in terminal)",
+		TerminalVideoStarting: "Starting terminal video... (q to return)",
 
 		warnFailedKillMpv:     "failed to kill mpv process: ",
 		errorPause:            "Error pausing: ",

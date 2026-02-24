@@ -370,7 +370,7 @@ func parsePlayMode(s string) PlayMode {
 
 func normalizeVideoQuality(s string) string {
 	switch strings.TrimSpace(s) {
-	case "360", "480", "720", "1080":
+	case "360", "480", "720", "1080", "tct":
 		return strings.TrimSpace(s)
 	default:
 		return "best"
