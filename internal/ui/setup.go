@@ -147,6 +147,8 @@ func (a *SimpleApp) setupConfigModal() {
 		AddButtons([]string{
 			a.strings.Language + ": " + GetLanguageName(a.language),
 			a.strings.Theme + ": " + a.theme.Name,
+			a.strings.VideoQuality + ": " + qualityLabel(a.videoQuality),
+			a.strings.VideoCodec + ": " + codecLabel(a.videoCodec),
 			a.strings.Help,
 			a.strings.Close,
 		}).
@@ -157,9 +159,13 @@ func (a *SimpleApp) setupConfigModal() {
 			case 1:
 				a.cycleTheme()
 			case 2:
+				a.cycleVideoQuality()
+			case 3:
+				a.cycleVideoCodec()
+			case 4:
 				a.app.SetRoot(a.helpView.Flex, true)
 				a.helpView.FocusContent()
-			case 3:
+			case 5:
 				a.inModal = false
 				a.app.SetRoot(a.getMainLayout(), true)
 			}
@@ -177,7 +183,7 @@ func (a *SimpleApp) setupLayout() {
 
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.statusBar, 0, 1, false).
-		AddItem(a.modeBadge, 18, 0, false)
+		AddItem(a.modeBadge, 24, 0, false)
 
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
@@ -199,7 +205,7 @@ func (a *SimpleApp) getMainLayout() tview.Primitive {
 
 	statusBarFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(a.statusBar, 0, 1, false).
-		AddItem(a.modeBadge, 18, 0, false)
+		AddItem(a.modeBadge, 24, 0, false)
 
 	return tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, true).
@@ -408,6 +414,8 @@ func (a *SimpleApp) refreshUI() {
 	a.configModal.ClearButtons().AddButtons([]string{
 		a.strings.Language + ": " + GetLanguageName(a.language),
 		a.strings.Theme + ": " + a.theme.Name,
+		a.strings.VideoQuality + ": " + qualityLabel(a.videoQuality),
+		a.strings.VideoCodec + ": " + codecLabel(a.videoCodec),
 		a.strings.Help,
 		a.strings.Close,
 	})
@@ -419,6 +427,82 @@ func (a *SimpleApp) refreshUI() {
 
 	a.inModal = true
 	a.app.SetRoot(a.configModal, true)
+}
+
+func qualityLabel(q string) string {
+	if q == "best" || q == "" {
+		return "Best"
+	}
+	return q + "p"
+}
+
+func codecLabel(c string) string {
+	switch c {
+	case "vp9":
+		return "VP9"
+	case "av1":
+		return "AV1"
+	default:
+		return "Any"
+	}
+}
+
+func (a *SimpleApp) cycleVideoQuality() {
+	qualities := []string{"best", "360", "480", "720", "1080"}
+
+	a.mu.Lock()
+	current := a.videoQuality
+	a.mu.Unlock()
+
+	currentIdx := 0
+	for i, q := range qualities {
+		if q == current {
+			currentIdx = i
+			break
+		}
+	}
+
+	next := qualities[(currentIdx+1)%len(qualities)]
+
+	a.mu.Lock()
+	a.videoQuality = next
+	a.mu.Unlock()
+
+	cfg, _ := config.LoadConfig()
+	cfg.Playback.VideoQuality = next
+	_ = config.SaveConfig(cfg)
+
+	a.refreshUI()
+	a.setStatusf(a.theme.Green, "✓ "+a.strings.QualityChanged, qualityLabel(next))
+}
+
+func (a *SimpleApp) cycleVideoCodec() {
+	codecs := []string{"", "vp9", "av1"}
+
+	a.mu.Lock()
+	current := a.videoCodec
+	a.mu.Unlock()
+
+	currentIdx := 0
+	for i, c := range codecs {
+		if c == current {
+			currentIdx = i
+			break
+		}
+	}
+
+	next := codecs[(currentIdx+1)%len(codecs)]
+
+	a.mu.Lock()
+	a.videoCodec = next
+	a.mu.Unlock()
+
+	cfg, _ := config.LoadConfig()
+	cfg.Playback.VideoCodec = next
+	_ = config.SaveConfig(cfg)
+
+	a.refreshUI()
+	a.setStatusf(a.theme.Green, "✓ "+a.strings.CodecChanged, codecLabel(next))
 }
 
 func (a *SimpleApp) initLanguageFromConfig() {

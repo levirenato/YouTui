@@ -11,8 +11,35 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/IvelOt/youtui-player/internal/config"
 	"github.com/gdamore/tcell/v2"
 )
+
+func buildYtdlFormat(quality, codec string) string {
+	var codecFilter string
+	switch codec {
+	case "vp9":
+		codecFilter = "[vcodec^=vp9]"
+	case "av1":
+		codecFilter = "[vcodec^=av01]"
+	}
+
+	if quality == "best" || quality == "" {
+		if codecFilter == "" {
+			return "bestvideo+bestaudio/best"
+		}
+		return fmt.Sprintf("bestvideo%s+bestaudio/bestvideo+bestaudio/best", codecFilter)
+	}
+
+	if codecFilter == "" {
+		return fmt.Sprintf("bestvideo[height<=%s]+bestaudio/best[height<=%s]", quality, quality)
+	}
+
+	return fmt.Sprintf(
+		"bestvideo%s[height<=%s]+bestaudio/bestvideo[height<=%s]+bestaudio/best[height<=%s]",
+		codecFilter, quality, quality, quality,
+	)
+}
 
 func (a *SimpleApp) setStatus(color tcell.Color, msg string) {
 	a.statusBar.SetText("[" + colorTag(color) + "]" + msg)
@@ -52,10 +79,16 @@ func (a *SimpleApp) playTrackSimple(track Track, idx int) {
 	}
 
 	a.mu.Lock()
-	if a.playMode == ModeAudio {
-		args = append(args, "--no-video", "--ytdl-format=bestaudio")
-	}
+	playMode := a.playMode
+	quality := a.videoQuality
+	codec := a.videoCodec
 	a.mu.Unlock()
+
+	if playMode == ModeAudio {
+		args = append(args, "--no-video", "--ytdl-format=bestaudio")
+	} else {
+		args = append(args, "--ytdl-format="+buildYtdlFormat(quality, codec))
+	}
 
 	args = append(args, track.URL)
 	cmd := exec.Command("mpv", args...)
@@ -203,10 +236,16 @@ func (a *SimpleApp) playTrackDirect(track Track) {
 	}
 
 	a.mu.Lock()
-	if a.playMode == ModeAudio {
-		args = append(args, "--no-video", "--ytdl-format=bestaudio")
-	}
+	playMode := a.playMode
+	quality := a.videoQuality
+	codec := a.videoCodec
 	a.mu.Unlock()
+
+	if playMode == ModeAudio {
+		args = append(args, "--no-video", "--ytdl-format=bestaudio")
+	} else {
+		args = append(args, "--ytdl-format="+buildYtdlFormat(quality, codec))
+	}
 
 	args = append(args, track.URL)
 	cmd := exec.Command("mpv", args...)
@@ -495,6 +534,16 @@ func (a *SimpleApp) toggleMode() {
 	}
 	newMode := a.playMode
 	a.mu.Unlock()
+
+	go func() {
+		cfg, _ := config.LoadConfig()
+		if newMode == ModeVideo {
+			cfg.Playback.DefaultMode = "video"
+		} else {
+			cfg.Playback.DefaultMode = "audio"
+		}
+		_ = config.SaveConfig(cfg)
+	}()
 
 	a.app.QueueUpdateDraw(func() {
 		a.updatePlayerInfo()

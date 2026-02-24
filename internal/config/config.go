@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	Theme ThemeConfig `toml:"theme"`
-	UI    UIConfig    `toml:"ui"`
+	Theme    ThemeConfig    `toml:"theme"`
+	UI       UIConfig       `toml:"ui"`
+	Playback PlaybackConfig `toml:"playback"`
 }
 
 type ThemeConfig struct {
@@ -21,6 +22,12 @@ type ThemeConfig struct {
 
 type UIConfig struct {
 	Language string `toml:"language, omitempty"`
+}
+
+type PlaybackConfig struct {
+	DefaultMode  string `toml:"default_mode,omitempty"`
+	VideoQuality string `toml:"video_quality,omitempty"`
+	VideoCodec   string `toml:"video_codec,omitempty"`
 }
 
 func GetConfigDir() string {
@@ -47,6 +54,11 @@ func LoadConfig() (*Config, error) {
 		},
 		UI: UIConfig{
 			Language: detectDefaultLanguage(),
+		},
+		Playback: PlaybackConfig{
+			DefaultMode:  "audio",
+			VideoQuality: "best",
+			VideoCodec:   "",
 		},
 	}
 

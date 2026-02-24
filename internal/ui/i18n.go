@@ -65,9 +65,14 @@ type Strings struct {
 	ThemeChanged    string
 	LanguageChanged string
 
-	Language string
-	Theme    string
-	Close    string
+	Language     string
+	Theme        string
+	VideoQuality string
+	VideoCodec   string
+	Close        string
+
+	QualityChanged string
+	CodecChanged   string
 
 	TypeToSearch  string
 	NavigateLists string
@@ -190,9 +195,14 @@ var translations = map[Language]Strings{
 		ThemeChanged:    "Tema alterado para: %s",
 		LanguageChanged: "Idioma alterado para: %s",
 
-		Language: "Idioma",
-		Theme:    "Tema",
-		Close:    "Fechar",
+		Language:     "Idioma",
+		Theme:        "Tema",
+		VideoQuality: "Qualidade",
+		VideoCodec:   "Codec",
+		Close:        "Fechar",
+
+		QualityChanged: "Qualidade alterada para: %s",
+		CodecChanged:   "Codec alterado para: %s",
 
 		TypeToSearch:  "Digite para buscar",
 		NavigateLists: "Navegar nas listas",
@@ -314,9 +324,14 @@ var translations = map[Language]Strings{
 		ThemeChanged:    "Theme changed to: %s",
 		LanguageChanged: "Language changed to: %s",
 
-		Language: "Language",
-		Theme:    "Theme",
-		Close:    "Close",
+		Language:     "Language",
+		Theme:        "Theme",
+		VideoQuality: "Quality",
+		VideoCodec:   "Codec",
+		Close:        "Close",
+
+		QualityChanged: "Quality changed to: %s",
+		CodecChanged:   "Codec changed to: %s",
 
 		TypeToSearch:  "Type to search",
 		NavigateLists: "Navigate lists",

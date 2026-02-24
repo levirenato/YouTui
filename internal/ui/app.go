@@ -4,6 +4,7 @@ package ui
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/IvelOt/youtui-player/internal/config"
@@ -90,6 +91,8 @@ type SimpleApp struct {
 
 	playlistMode PlaylistMode
 	playMode     PlayMode
+	videoQuality string
+	videoCodec   string
 
 	stopProgress chan bool
 
@@ -132,7 +135,9 @@ func NewSimpleApp(version string) *SimpleApp {
 		playlistTracks: []Track{},
 		pagination:     NewPagination(10),
 		playlistMode:   ModeNormal,
-		playMode:       ModeAudio,
+		playMode:       parsePlayMode(cfg.Playback.DefaultMode),
+		videoQuality:   normalizeVideoQuality(cfg.Playback.VideoQuality),
+		videoCodec:     normalizeVideoCodec(cfg.Playback.VideoCodec),
 		currentTrack:   -1,
 		theme:          theme,
 		version:        version,
@@ -354,4 +359,31 @@ func (a *SimpleApp) AutoSaveState() {
 			_ = err
 		}
 	}()
+}
+
+func parsePlayMode(s string) PlayMode {
+	if strings.ToLower(strings.TrimSpace(s)) == "video" {
+		return ModeVideo
+	}
+	return ModeAudio
+}
+
+func normalizeVideoQuality(s string) string {
+	switch strings.TrimSpace(s) {
+	case "360", "480", "720", "1080":
+		return strings.TrimSpace(s)
+	default:
+		return "best"
+	}
+}
+
+func normalizeVideoCodec(s string) string {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "vp9":
+		return "vp9"
+	case "av1":
+		return "av1"
+	default:
+		return ""
+	}
 }

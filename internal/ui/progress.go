@@ -161,16 +161,22 @@ func (a *SimpleApp) updatePlayerInfo() {
 func (a *SimpleApp) updateModeBadge() {
 	a.mu.Lock()
 	mode := a.playMode
-	strings := a.strings
+	quality := a.videoQuality
+	codec := a.videoCodec
+	str := a.strings
 	a.mu.Unlock()
 
 	a.playerInfo.SetTitleColor(a.theme.Subtext0)
 
 	var badge string
 	if mode == ModeVideo {
-		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Blue) + ":b] 󰗃 " + strings.Video + " [-:-:-] "
+		label := qualityLabel(quality)
+		if c := codecLabel(codec); c != "Any" {
+			label += " " + c
+		}
+		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Blue) + ":b] 󰗃 " + str.Video + " " + label + " [-:-:-] "
 	} else {
-		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Green) + ":b]  " + strings.Audio + " [-:-:-] "
+		badge = "[" + colorTag(a.theme.Subtext0) + "]m[-] [" + colorTag(a.theme.Crust) + ":" + colorTag(a.theme.Green) + ":b]  " + str.Audio + " [-:-:-] "
 	}
 	a.modeBadge.SetText(badge)
 }
